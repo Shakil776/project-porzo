@@ -1,0 +1,317 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Hotel Discount List{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Discount List</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Discount List</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing" >
+
+            <div id="" class="col-lg-12 layout-spacing">
+            <div v-if="click_event" class="statbox widget box box-shadow" :style="'display:'+ hide_or_vis +';'">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Edit Hotel Discount</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area"> 
+                    <form @submit.prevent="updateDiscount(update_val.hotel_discount_id)">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="HotelDiscountNameUpdate">Hotel Discount Name</label>
+                                <input v-if="update_bool" type="text" class="form-control" id="HotelDiscountNameUpdate" :value="update_val.hotel_discount_name" placeholder="Enter Hotel Discount Name" required="">  
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="StartEntryDateUpdate">Start Time Date</label>
+                                <input v-if="update_bool" type="date" class="form-control" id="StartEntryDateUpdate" :value="update_val.start_time_date" placeholder="">  
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="EndEntryDateUpdate">End Time Date</label>
+                                <input v-if="update_bool" type="date" class="form-control" id="EndEntryDateUpdate" :value="update_val.end_time_date" placeholder="">  
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="MaxAmountUpdate">Max Amount</label>
+                                <input v-if="update_bool" type="text" class="form-control" id="MaxAmountUpdate" :value="update_val.offer_max_amount_details.max_amount" placeholder="Enter Max Amount" required="">  
+                            </div>
+                        </div>
+                        <div class="form-row">
+
+                            <div class="form-group col-md-12">
+                                <label for="MinAmountUpdate">Min Amount</label>
+                                <input v-if="update_bool" type="text" class="form-control" id="MinAmountUpdate" :value="update_val.offer_max_amount_details.min_amount" placeholder="Enter Room Offer Price" required="">  
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="n-chk">
+                                <label>
+                                  <input v-if="update_bool" :value="update_val.is_active" type="checkbox" id="isActive_u" class="new-control-input is_active" name="is_active" checked>
+                                  <span>Is Active</span>
+                                </label>
+                            </div>
+                        </div>
+
+                      <button type="submit" class="btn btn-primary mt-3">Update Update Hotel Discount</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- table start -->
+<div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+    <h4 class="d-inline">Discount List</h4>
+
+    <div class="widget-content widget-content-area br-6 mt-4">
+        <div class="row">
+            <div class="col-sm-4">
+                Show
+                <select v-model="perPage" @change="handlePageSizeChange($event)">
+                    <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                </select>
+                entries
+            </div>
+        
+            <div class="col-sm-4 offset-sm-4">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Search" v-model="searchKey"  @keyup="getSearchData" />
+              </div>
+            </div>
+        </div>
+        
+
+        <div class="table-responsive mb-4 mt-4">
+
+            <table class="table" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Discount Name</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <!-- <th>Max Amount</th>
+                        <th>Minimum Amount</th> -->
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr v-if="allHotelDiscounts.length" v-for="h_discounts in allHotelDiscounts" :key="h_discounts.hotel_discount_id">
+                        <td>${ h_discounts.hotel_discount_id }</td>
+                        <td>${ h_discounts.hotel_discount_name }</td>
+                        <td>${ h_discounts.start_time_date }</td>
+                        <td>${ h_discounts.end_time_date }</td>
+                        <!-- <td>TK. ${ h_discounts.offer_max_amount_details.max_amount }</td> -->
+                        <!-- <td>TK. ${ h_discounts.offer_max_amount_details.min_amount }</td> -->
+                        <td v-if="h_discounts.is_active">By Porzotok</td>
+                        <td v-else>Not listed in Porzotok</td>
+                        <td class="text-center">
+                            <a @click.prevent="editDiscount(h_discounts.hotel_discount_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                            &nbsp;
+                            <a @click.prevent="deleteDiscount(h_discounts.hotel_discount_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                        </td>
+                    </tr>
+
+                    <tr v-show="!allHotelDiscounts.length" class="text-center"><td colspan="8">No Data</td></tr>
+
+                </tbody>
+                
+            </table>
+
+             <div v-if="allHotelDiscounts.length">
+                <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last"></b-pagination>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- table end -->
+
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allHotelDiscounts : [],
+                error: '',
+                update_val : [],
+                update_offer_max_id:0,
+                click_event : false,
+                update_bool : false,
+                hide_or_vis : "none",
+                logged_user_id: {{ request.session.uid }},
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+                searchKey: null,
+            },
+            mounted: function() {
+                this.getAllHotelDiscounts();
+            },
+            methods: {
+                async getAllHotelDiscounts() {
+                    await this.$http.get(`/admin-api/discount-list/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allHotelDiscounts = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllHotelDiscounts();
+                },
+                async getSearchData() {
+                    if (this.searchKey != null && this.logged_user_id != null) {
+                        const result = await this.$http.get(`/admin-api/hotel-discount-search/?user_id=${this.logged_user_id}&key=${this.searchKey}`);
+                        if (result.data.error === false) {
+                            this.allHotelDiscounts = result.data.data;
+                            this.totalItems = result.data.count;
+                        }
+                    } 
+                },
+                editDiscount: function(did){
+                    this.click_event = true;
+                    this.hide_or_vis = "block";
+                    // back to top when edit
+                    // window.scrollTo(0,0);
+                    let scrollingElement = (document.scrollingElement || document.body);
+                    $(scrollingElement).animate({
+                        scrollTop: 0
+                    }, 500);
+                    // send request
+                    this.$http.get(`/admin-api/discount-hotel/${did}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.update_bool = true;
+                                this.update_val = resp.data.data;
+                                this.update_offer_max_id = resp.data.data.offer_max_amount_id;
+
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                updateDiscount: function(did){
+                    let form_data = new FormData();
+                    let offer_max_form_data = new FormData();
+                    offer_max_form_data.append('max_amount', document.getElementById('MaxAmountUpdate').value);
+                    offer_max_form_data.append('min_amount', document.getElementById('MinAmountUpdate').value);
+                    
+                    this.$http.put(`/admin-api/add-offer-max/${this.update_offer_max_id}/`, offer_max_form_data)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                setInterval(function(){ 
+                                    error = false;
+                                 }, 3000);
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                    form_data.append('hotel_discount_name', document.getElementById('HotelDiscountNameUpdate').value);
+                    form_data.append('start_time_date', document.getElementById('StartEntryDateUpdate').value);
+                    form_data.append('end_time_date', document.getElementById('EndEntryDateUpdate').value);
+                    form_data.append('is_active', document.querySelector('.is_active').checked);
+                    form_data.append('offer_max_amount_id', this.update_offer_max_id);
+
+                    this.$http.put(`/admin-api/discount-hotel/${did}/`, form_data)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.click_event = false;
+                                this.msg = resp.data.message;
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Hotel Discount Updated Successfully.',
+                                    messageColor: 'black'
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                deleteDiscount: function(did){
+                    swal({
+                      title: 'Are you sure?',
+                      text: "You won't be able to revert this!",
+                      type: 'warning',
+                      showCancelButton: true,
+                      confirmButtonText: 'Delete',
+                      padding: '2em'
+                    }).then((result) => {
+                      if (result.value){
+
+                        this.$http.delete(`/admin-api/discount-hotel/${did}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Hotel Discount Deleted Successfully',
+                                    messageColor: 'black'
+                                });
+                                this.getAllHotelDiscounts();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+
+                      }
+                    });
+                },
+
+            },
+            watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllHotelDiscounts();
+                  }
+                }
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

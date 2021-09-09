@@ -1,0 +1,338 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Porzotok</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->  
+  <link rel="icon" type="image/png" href="{% static 'frontEnd/assets/images/icons/favicon.ico' %}" />
+<!--===============================================================================================-->
+  <link rel="stylesheet" type="text/css" href="{% static 'frontEnd/assets/vendor/bootstrap/css/bootstrap.min.css' %}">
+<!--===============================================================================================-->
+  <link rel="stylesheet" type="text/css" href="{% static 'frontEnd/assets/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+<!--===============================================================================================-->
+  <link rel="stylesheet" type="text/css" href="{% static 'frontEnd/assets/fonts/iconic/css/material-design-iconic-font.min.css' %}">
+<!--===============================================================================================-->
+  <link rel="stylesheet" type="text/css" href="{% static 'frontEnd/assets/vendor/animate/animate.css' %}">
+<!--===============================================================================================-->
+  <link rel="stylesheet" type="text/css" href="{% static 'frontEnd/assets/vendor/select2/select2.min.css' %}">
+<!--===============================================================================================-->
+  <link rel="stylesheet" type="text/css" href="{% static 'frontEnd/assets/css/util.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'frontEnd/assets/css/main.css' %}">
+<!--===============================================================================================-->
+</head>
+<body>
+  
+  <div class="container" id="app">
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Room List</h2>
+
+        <div class="" v-for="room in allRooms" :key="room.room_id">
+          <div class="card-body">
+            <h5 class="card-title">${ room.room_name }</h5>
+            <p class="card-text">${ room.room_description }</p>
+            <a href="javascript:" class="btn btn-primary" @click="addRoomToCart(room.room_id);">Add to Card</a>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-md-12">
+        <h2>Facilites List</h2>
+
+        <div class="card" v-for="hfacilites in allHotelFacilites" :key="hfacilites.hotel_facilites_id">
+          <div class="card-body">
+            <h5 class="card-title">${ hfacilites.facilites_details.facilites_name }</h5>
+            <h5 class="card-title">${ hfacilites.price_details.price }</h5>
+            <a href="javascript:" class="btn btn-primary" @click="addFacilitesToCart(hfacilites.hotel_facilites_id);">Add to Card</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-12">
+        <h2>FoodMenu List</h2>
+
+        <div class="card" v-for="foodmenus in allFoodMenus" :key="foodmenus.food_menu_id">
+          <div class="card-body">
+            <h5 class="card-title">${ foodmenus.food_name }</h5>
+            <h5 class="card-title">${ foodmenus.price_id.price }</h5>
+            <a href="javascript:" class="btn btn-primary" @click="addFoodMenuToCart(foodmenus.food_menu_id);">Add to Card</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-12">
+        <h2>Package List</h2>
+
+        <div class="card" v-for="packages in allPackages" :key="packages.package_id">
+          <div class="card-body">
+            <h5 class="card-title">${ packages.package_name }</h5>
+            <h5 class="card-title">${ packages.price_details.price }</h5>
+            <a href="javascript:" class="btn btn-primary" @click="addPackageToCart(packages.package_id);">Add to Card</a>
+          </div>
+        </div>
+      </div>
+      <a @click="logout" href="javascript:">Logout</a>
+    </div>
+  </div>
+
+
+            
+            
+<!--===============================================================================================-->  
+  <script src="{% static 'frontEnd/assets/vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+<!--===============================================================================================-->
+  <script src="{% static 'frontEnd/assets/vendor/bootstrap/js/popper.js' %}"></script>
+  <script src="{% static 'frontEnd/assets/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!--===============================================================================================-->
+  <script src="{% static 'frontEnd/assets/vendor/select2/select2.min.js' %}"></script>
+<!--===============================================================================================-->
+  <script src="{% static 'frontEnd/assets/vendor/countdowntime/moment.min.js' %}"></script>
+  <script src="{% static 'frontEnd/assets/vendor/countdowntime/moment-timezone.min.js' %}"></script>
+  <script src="{% static 'frontEnd/assets/vendor/countdowntime/moment-timezone-with-data.min.js' %}"></script>
+  <script src="{% static 'frontEnd/assets/vendor/countdowntime/countdowntime.js' %}"></script>
+  <script>
+    $('.cd100').countdown100({
+      /*Set Endtime here*/
+      /*Endtime must be > current time*/
+      endtimeYear: 0,
+      endtimeMonth: 0,
+      endtimeDate: 35,
+      endtimeHours: 19,
+      endtimeMinutes: 0,
+      endtimeSeconds: 0,
+      timeZone: "" 
+      // ex:  timeZone: "America/New_York"
+      //go to " http://momentjs.com/timezone/ " to get timezone
+    });
+  </script>
+<!--===============================================================================================-->
+  <script src="{% static 'frontEnd/assets/vendor/tilt/tilt.jquery.min.js' %}"></script>
+  <script >
+    $('.js-tilt').tilt({
+      scale: 1.1
+    });
+  </script>
+<!--===============================================================================================-->
+  <script src="{% static 'frontEnd/assets/js/main.js' %}"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.2"></script>
+    <script type="text/javascript">
+        Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+    </script>
+
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allRooms: [],
+                allFoodMenus: [],
+                allHotelFacilites: [],
+                allPackages: [],
+                session_id: "{{ session_id }}",
+                user_id: "{{ user_id }}",
+                pro_cart_id: 0,
+                isSessionActive: false,
+            },
+            mounted: function() {
+                this.getAllRooms();
+                this.getAllFoodMenus();
+                this.getAllPackages();
+                this.getAllHotelFacilites();
+            },
+            methods: {
+                getAllRooms: function(){
+                    this.$http.get(`/api/room/`)
+                      .then((resp) => {
+                        this.allRooms = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+                getAllPackages: function(){
+                    this.$http.get(`/api/package/`)
+                      .then((resp) => {
+                        this.allPackages = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+                getAllFoodMenus: function(){
+                    this.$http.get(`/api/food-menu/`)
+                      .then((resp) => {
+                        this.allFoodMenus = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+                getAllHotelFacilites: function(){
+                  this.$http.get(`/api/hotelfacilites/`)
+                    .then((resp) => {
+                        this.allHotelFacilites = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                
+                addToCartDetails: function(js_cartDetails) {
+                  this.$http.post(`/api/cart-details/`, js_cartDetails)
+                      .then((resp) => {
+                        console.log(resp.data);
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+
+                addRoomToCart: function(room_id) {
+                  // check user already or not
+
+                  if (this.user_id != 0) {
+                      var requestedData = {'session_id': `${this.session_id}`, 'user_id': `${this.user_id}`};
+                  } else {
+                    var requestedData = {'session_id': `${this.session_id}`};
+                  }
+
+                  let js = JSON.stringify(requestedData);
+
+                  if(this.isSessionActive == false){
+                    this.$http.post(`/api/carts/`, js)
+                      .then((resp) => {
+                      let requestedforCardDetails = {'cart_id': `${resp.data.cart_id}`, 'room_id': `${room_id}`};
+                      let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                      this.addToCartDetails(js_cartDetails);
+                      this.isSessionActive = true;
+                      this.pro_cart_id = resp.data.cart_id;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                  }else{
+                    let requestedforCardDetails = {'cart_id': `${this.pro_cart_id}`, 'room_id': `${room_id}`};
+                      let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                      this.addToCartDetails(js_cartDetails);
+                  }
+                },
+
+                addFacilitesToCart: function(hotel_facilites_id) {
+
+                  // check user already or not
+
+                  if (this.user_id != 0) {
+                      var requestedData = {'session_id': `${this.session_id}`, 'user_id': `${this.user_id}`};
+                  } else {
+                    var requestedData = {'session_id': `${this.session_id}`};
+                  }
+
+                  let js = JSON.stringify(requestedData);
+                  if(this.isSessionActive == false){
+                    this.$http.post(`/api/carts/`, js)
+                      .then((resp) => {
+                      let requestedforCardDetails = {'cart_id': `${resp.data.cart_id}`, 'hotel_facilites_id': `${hotel_facilites_id}`};
+                      let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                      this.addToCartDetails(js_cartDetails);
+                      this.isSessionActive = true;
+                      this.pro_cart_id = resp.data.cart_id;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                  }else{
+                    let requestedforCardDetails = {'cart_id': `${this.pro_cart_id}`, 'hotel_facilites_id': `${hotel_facilites_id}`};
+                      let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                      this.addToCartDetails(js_cartDetails);
+                  }
+                },
+
+
+                addFoodMenuToCart: function(food_menu_id) {
+
+                  // check user already or not
+                  if (this.user_id != 0) {
+                      var requestedData = {'session_id': `${this.session_id}`, 'user_id': `${this.user_id}`};
+                  }else{
+                    var requestedData = {'session_id': `${this.session_id}`};
+                  }
+
+                  let js = JSON.stringify(requestedData);
+                  if(this.isSessionActive == false){
+                    this.$http.post(`/api/carts/`, js)
+                      .then((resp) => {
+                        let requestedforCardDetails = {'cart_id': `${resp.data.cart_id}`, 'food_menu_id': `${food_menu_id}`};
+                        let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                        this.addToCartDetails(js_cartDetails);
+                        this.isSessionActive = true;
+                        this.pro_cart_id = resp.data.cart_id;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                  }else{
+                    let requestedforCardDetails = {'cart_id': `${this.pro_cart_id}`, 'food_menu_id': `${food_menu_id}`};
+                      let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                      this.addToCartDetails(js_cartDetails);
+                  }
+                },
+
+
+                addPackageToCart: function(package_id) {
+                  // check user already or not
+
+                  if (this.user_id != 0) {
+                      var requestedData = {'session_id': `${this.session_id}`, 'user_id': `${this.user_id}`};
+                  } else {
+                    var requestedData = {'session_id': `${this.session_id}`};
+                  }
+
+                  let js = JSON.stringify(requestedData);
+                  if(this.isSessionActive == false){
+                    this.$http.post(`/api/carts/`, js)
+                      .then((resp) => {
+                      let requestedforCardDetails = {'cart_id': `${resp.data.cart_id}`, 'package_id': `${package_id}`};
+                      let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                      this.addToCartDetails(js_cartDetails);
+                      this.isSessionActive = true;
+                      this.pro_cart_id = resp.data.cart_id;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                  }else{
+                    let requestedforCardDetails = {'cart_id': `${this.pro_cart_id}`, 'package_id': `${package_id}`};
+                      let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                      this.addToCartDetails(js_cartDetails);
+                  }
+                },
+
+                logout: function(){
+                  this.$http.post(`/cart/`)
+                      .then((resp) => {
+                        console.log("");
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+
+</body>
+</html>

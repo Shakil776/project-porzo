@@ -1,0 +1,262 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || 24 Hours Deals Room{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">24 Hours Deals Room</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">24 Hours Deals Room</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add 24 Hours Deals Room</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="add24HoursDeals" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <!-- <div class="form-group col-md-6">
+                                <label for="hotelId">Hotel&nbsp;<span class="text-danger h5">*</span></label>
+                                <select v-model="hotel_id" id="hotelId" class="form-control" @change="getRoomByHotel()">
+                                     <option v-for="hotel in allHotels" :value="hotel.hotel_id">${ hotel.hotel_name }</option>
+                                </select>
+                            </div> -->
+
+                            <div class="form-group col-md-6">
+                                <label for="roomId">Room&nbsp;<span class="text-danger h5">*</span></label>
+                                <select v-model="room_id" name="room_id[]" class="form-control" id="roomId" multiple>
+                                     <option v-for="rooms in allRooms" :value="rooms.room_id">${ rooms.room_name }</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="allow_offer">Allow Offer (in %)&nbsp;<span class="text-danger h5">*</span></label>
+                                <input class="form-control" type="number" v-model="allow_offer" id="allow_offer" name="allow_offer" placeholder="Allow offer price (in %)">
+                            </div>
+
+                        </div>
+
+                      <button type="submit" class="btn btn-primary mt-3">Add 24 Hours Deals Room</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- add form end -->
+
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">24 Hours Deals List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="row">
+                    <div class="col-sm-4">
+                        Show
+                        <select v-model="perPage" @change="handlePageSizeChange($event)">
+                            <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                        </select>
+                        entries
+                    </div>
+                
+                    <div class="col-sm-4 offset-sm-4">
+                      <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search" v-model="searchKey"  @keyup="getSearchData" />
+                      </div>
+                    </div>
+                </div>
+                
+
+                <div class="table-responsive mb-4 mt-4">
+                    <table class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <!-- <th>Hotel Name</th> -->
+                                <th>Room Name</th>
+                                <th>Room No</th>
+                                <th>Price</th>
+                                <th>Deals Price</th>
+                                <th>24 Hour Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="allRoomDeals.length" v-for="(hdeals, index) in allRoomDeals" :key="hdeals.room_id">
+                                <td>${ index + 1 }</td>
+                                <!-- <td>${ hdeals.hotel_details.hotel_name }</td> -->
+                                <td>${ hdeals.room_name }</td>
+                                <td>${ hdeals.room_no }</td>
+                                <td>TK. ${ hdeals.price_details.price }</td>
+                                <td>TK. ${ hdeals.offer_discount_price }</td>
+                                <td>Active</td>
+                                <td>
+                                    <a @click="changeIsDealsStatus(hdeals.room_id);" v-if="hdeals.is_deals === true" href="javascript:" style="color: #445EDE; font-size: 16px;" title="Deactive"><i class="fas fa-toggle-on"></i></a>
+                                </td>
+                            </tr>
+                            <tr v-show="!allRoomDeals.length" class="text-center"><td colspan="8">No Data</td></tr>
+                        </tbody> 
+                    </table>
+
+                     <div v-if="allRoomDeals.length">
+                        <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last"></b-pagination>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allRoomDeals : [],
+                // allHotels : [],
+                allRooms : [],
+                // hotel_id : null,
+                room_id : [],
+                allow_offer : null,
+                logged_user_id: {{ request.session.uid }},
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+                searchKey: null,
+            },
+            mounted: function() {
+                this.getRooms();
+                this.getAllRoomDeals()
+            },
+            methods: {
+                async getAllRoomDeals() {
+                    await this.$http.get(`/admin-api/room-deals-list/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allRoomDeals = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllRoomDeals();
+                },
+                async getSearchData() {
+                    if (this.searchKey != null && this.logged_user_id != null) {
+                        const result = await this.$http.get(`/admin-api/deals-room-search/?user_id=${this.logged_user_id}&key=${this.searchKey}`);
+                        if (result.data.error === false) {
+                            this.allRoomDeals = result.data.data;
+                            this.totalItems = result.data.count;
+                        }
+                    } 
+                },
+                add24HoursDeals: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('room_id', this.room_id);
+                    form_data.append('allow_offer', this.allow_offer);
+                    this.$http.post(`/admin-api/deals-hotels/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.data.error == false) {
+                                // clear all form field after successfully insert data
+                                this.getAllRoomDeals();
+                                this.getRooms();
+                                this.room_id = [];
+                                this.allow_offer = null;
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: '24 Hour Deal Update Successfully.',
+                                    messageColor: 'black'
+                                });
+                                // this.getRoomByHotel();
+                            }
+                            else {
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Opppps!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong. Please try again.',
+                                    messageColor: 'black'
+                                });
+
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                getRooms(){
+                    this.$http.get(`/admin-api/get-hotel-room/?user_id=${this.logged_user_id}`)
+                      .then((resp) => {
+                        this.allRooms = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                changeIsDealsStatus(room_id){
+                    this.$http.put(`/admin-api/deals-hotels/${room_id}/`, {'status': 1})
+                        .then((resp) => {
+                            iziToast.show({
+                                title: 'Success!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'green',
+                                message: 'Deactivated 24 hour deals room.',
+                                messageColor: 'black'
+                            });
+                            this.getAllRoomDeals();
+                            this.getRooms();
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+            },
+            watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllRoomDeals();
+                  }
+                }
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

@@ -1,0 +1,429 @@
+{% extends 'backEnd/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Package{% endblock  %}
+
+{% block custom_css %}
+    <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- select2 -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/select2/select2.min.css' %}">
+
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Package</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Packages</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Package</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addPackage" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="packageName">Package Name</label>
+                                <input type="text" class="form-control" v-model="package_name" id="packageName" placeholder="Enter Package Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="hotelId">Hotel</label>
+
+                                <select v-model="hotel_id" id="hotelId" class="form-control" @change="getRoomByHotel()">
+                                     <option v-for="hotel in allHotels" :value="hotel.hotel_id">${ hotel.hotel_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="roomId">Room</label>
+                                <select v-model="room_id" name="room_id[]" class="form-control" id="roomId" multiple>
+                                    <option v-for="room in allRooms" :value="room.room_id">${ room.room_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="foodMenuId">Food Menu</label>
+                                <select v-model="food_menu_id" name="food_menu_id[]" id="foodMenuId" class="form-control" multiple>
+                                     <option v-for="foodMenu in allFoodMenus" :value="foodMenu.food_menu_id">${ foodMenu.food_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="touristSpotId">Tourist Spot</label>
+                                <select v-model="tourist_spot_id" name="tourist_spot_id[]" id="touristSpotId" class="form-control" multiple>
+                                     <option v-for="touristSpot in allTourisSpots" :value="touristSpot.tourist_spot_id">${ touristSpot.tourist_spot_name }</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="facilitesId">Facilites</label>
+                                <select v-model="facilites_id" name="facilites_id[]" id="facilitesId" class="form-control" multiple>
+                                     <option v-for="facilites in allFacilites" :value="facilites.facilites_id">${ facilites.facilites_name }</option>
+                                </select>
+                            </div>
+                            
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="packagePrice">Price</label>
+                                <input type="number" class="form-control" v-model="price" id="packagePrice" placeholder="Enter Package Price">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="packageOfferPrice">Offer Price</label>
+                                <input type="number" class="form-control" v-model="offer_price" id="packageOfferPrice" placeholder="Enter Package Offer Price">
+                            </div>
+                            
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="priceEntryDate">Price Entry Date</label>
+                                <input type="date" class="form-control" v-model="price_entry_date" id="priceEntryDate">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="priceType">Price Type</label>
+                                <select v-model="price_type" id="priceType" class="form-control">
+                                    <option value="1">Room Price</option>
+                                    <option value="2">Food Price</option>
+                                    <option value="3">Facilites Price</option>
+                                    <option value="4">Package Price</option>
+                                </select>
+                            </div>
+                            
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="packageImage">Package Image</label>
+                                <input @change="onFileChange" type="file" class="form-control" name="image" id="packageImage"/>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="description">Description</label>
+                                <textarea class="form-control" id="description" placeholder="Enter package Description" rows="6" v-model="description"></textarea>
+                            </div>
+                        </div>
+
+
+                      <button type="submit" class="btn btn-primary mt-3">Add Package</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Package List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="table-responsive mb-4 mt-4">
+                    <table id="dataTableContent" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Package Name</th>
+                                <th>Hotel Name</th>
+                                <th>Room Name</th>
+                                <th>Room Number</th>
+                                <th>FoodMenu</th>
+                                <th>Facilites</th>
+                                <th>Facilites</th>
+                                <th>Price</th>
+                                <th>Offer Price</th>
+                                <th>Description</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-for="package in allPackages" :key="package.package_id">
+                                <td>${ package.package.package_id }</td>
+                                <td>${ package.package.package_name }</td>
+                                <td>${ package.room_details.hotel_id.hotel_name }</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>TK. ${ package.price_details.price }</td>
+                                <td>TK. ${ package.price_details.offer_price }</td>
+                                <td>${ package.description }</td>
+
+                                <td class="text-center">
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>
+    <div id="toastMsg"></div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+    <!-- select 2 -->
+    <script src="{% static 'backEnd/plugins/select2/select2.min.js' %}"></script>
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allPackages : [],
+                allHotels : [],
+                allRooms : [],
+                allFoodMenus : [],
+                allTourisSpots : [],
+                allFacilites : [],
+                package_name : null,
+                hotel_id : null,
+                room_id : [],
+                food_menu_id : [],
+                facilites_id : [],
+                price : null,
+                offer_price : null,
+                price_entry_date : null,
+                offer_price : null,
+                price_type : null,
+                description : null,
+                tourist_spot_id : [],
+                image : '',
+                msg : '',
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                // toast = '<div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;"><p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">'+msg+'</p><button class="action" style="color: rgb(37, 213, 228);">Dismiss</button></div>',
+            },
+            mounted: function() {
+                $(".disabled-results").select2();
+                this.getAllPackages();
+                this.getAllHotels();
+                this.getAllFoodMenus();
+                this.getAllTouristSpots();
+                this.getAllFacilites();
+            },
+            methods: {
+                addPackage: function(event) {
+                    let form_data = new FormData();
+
+                    // check room empty or not
+                    if (this.room_id.length != 0) {
+                        form_data.append('room_id', this.room_id);
+                    }
+                    // check food menu empty or not
+                    if (this.food_menu_id.length != 0) {
+                         form_data.append('food_menu_id', this.food_menu_id);
+                    }
+                    // check facilities empty or not
+                    if (this.facilites_id.length != 0) {
+                        form_data.append('facilites_id', this.facilites_id);
+                    }
+                    // check tourist spot empty or not
+                    if (this.tourist_spot_id.length != 0) {
+                        form_data.append('tourist_spot_id', this.tourist_spot_id);
+                    }
+
+                    form_data.append('package_name', this.package_name);
+                    form_data.append('package_image', this.image);
+                    form_data.append('floor_id', this.floor_id);
+                    form_data.append('description', this.description);
+                    form_data.append('price', this.price);
+                    form_data.append('offer_price', this.offer_price);
+                    form_data.append('price_entry_date', this.price_entry_date);
+                    form_data.append('price_type', this.price_type);
+
+                    this.$http.post(`/api/package/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                // show toast message
+                                var toast = '<div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;"><p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">'+this.msg+'</p></div>';
+                                document.getElementById("toastMsg").innerHTML = toast;
+                                setTimeout(function(){
+                                    document.getElementById("toastMsg").innerHTML = '';
+                                }, 5000);
+                                // clear all form field after successfully insert data
+                                this.package_name = '';
+                                this.hotel_id = '';
+                                this.room_id = [];
+                                this.food_menu_id = [];
+                                this.description = '';
+                                this.tourist_spot_id = [];
+                                this.facilites_id = [];
+                                this.price = '';
+                                this.offer_price = '';
+                                this.price_entry_date = '';
+                                this.price_type = '';
+
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                // get all packages
+                                this.getAllPackages();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getAllPackages: function() {
+                    this.$http.get(`/api/package/`)
+                        .then((resp) => {
+                            this.allPackages = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                getAllHotels: function(){
+                    this.$http.get(`/api/hotel_details/`)
+                      .then((resp) => {
+                        this.allHotels = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getRoomByHotel: function(){
+                    this.$http.get(`/api/room/?hotel_id=${this.hotel_id}`)
+                      .then((resp) => {
+                        this.allRooms = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getAllFoodMenus: function(){
+                    this.$http.get(`/api/food-menu/`)
+                      .then((resp) => {
+                        this.allFoodMenus = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getAllTouristSpots: function(){
+                    this.$http.get(`/api/tourist-spot/`)
+                      .then((resp) => {
+                        this.allTourisSpots = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getAllFacilites: function(){
+                    this.$http.get(`/api/facilites/`)
+                      .then((resp) => {
+                        this.allFacilites = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                onFileChange(event) {
+                    this.image = event.target.files[0];
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

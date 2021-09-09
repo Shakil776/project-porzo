@@ -1,0 +1,290 @@
+{% extends 'backEnd/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Hotel Room 24 Hours Deals{% endblock  %}
+
+{% block custom_css %}
+    <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Hotel Room 24 Hours Deals</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Hotel Room 24 Hours Deals</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Hotel Room 24 Hours Deals</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addHotelDeals" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="TwentyFOURHOURSdealsPorzotokId">Twenty Four Hours Deals</label>
+                                <select v-model="twenty_four_hours_deals_porzotok_id" id="TwentyFOURHOURSdealsPorzotokId" class="form-control">
+                                     <option v-for="pdeals in TwentyFourHoursDealsPorzotoks" :value="pdeals.twenty_four_hours_deals_porzotok_id">${ pdeals.twenty_four_hours_deals_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="hotelId">Hotel</label>
+                                <select v-model="hotel_id" id="hotelId" class="form-control" @change="getRoomByHotel()">
+                                     <option v-for="hotel in allHotels" :value="hotel.hotel_id">${ hotel.hotel_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="roomId">Room</label>
+                                <select v-model="room_id" id="roomId" class="form-control">
+                                     <option v-for="room in allRooms" :value="room.room_id">${ room.room_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="n-chk">
+                            <label>
+                              <input v-model="is_active" type="checkbox" id="isActive" class="new-control-input" checked>
+                              <span>Is Active</span>
+                            </label>
+                        </div>
+
+                      <button type="submit" class="btn btn-primary mt-3">Add Hotel Room 24 Hours Deals</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Hotel Room 24 Hours Deals List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="table-responsive mb-4 mt-4">
+                    <table id="dataTableContent" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>24 Hours Deals Name</th>
+                                <th>Hotel Name</th>
+                                <th>Room Name</th>
+                                <th>Room Number</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-for="hdeals in allTwentyFourHoursDeals" :key="hdeals.twenty_four_hours_deals_id">
+                                <td>${ hdeals.twenty_four_hours_deals_id }</td>
+                                <td>${ hdeals.twenty_four_hours_deals_porzotok_details.twenty_four_hours_deals_name }</td>
+                                <td>${ hdeals.room_details.hotel_id.hotel_name }</td>
+                                <td>${ hdeals.room_details.room_name }</td>
+                                <td>${ hdeals.room_details.room_no }</td>
+                                <td>${ hdeals.is_active }</td>
+
+                                <td class="text-center">
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>
+    <div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;">
+        <p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">${msg}</p>
+        <button class="action" style="color: rgb(37, 213, 228);">Dismiss</button>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allTwentyFourHoursDeals : [],
+                TwentyFourHoursDealsPorzotoks : [],
+                allHotels : [],
+                allRooms : [],
+                twenty_four_hours_deals_porzotok_id : null,
+                hotel_id : null,
+                room_id : null,
+                is_active : null,
+                msg : '',
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+            },
+            mounted: function() {
+                this.getTwentyFourHoursDealsPorzotoks();
+                this.getAllTwentyFourHoursDeals();
+                this.getAllHotels();
+                
+            },
+            methods: {
+                addHotelDeals: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('twenty_four_hours_deals_porzotok_id', this.twenty_four_hours_deals_porzotok_id);
+                    form_data.append('room_id', this.room_id);
+                    form_data.append('floor_id', this.floor_id);
+                    form_data.append('is_active', this.is_active);
+
+                    this.$http.post(`/api/hotel-deals/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.error = true
+                                this.msg = resp.data.message;
+
+                                // clear all form field after successfully insert data
+                                this.twenty_four_hours_deals_porzotok_id = '';
+                                this.hotel_id = '';
+                                this.room_id = '';
+                                this.is_active = '';
+
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                // get all packages
+                                this.getAllTwentyFourHoursDeals();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getAllTwentyFourHoursDeals: function() {
+                    this.$http.get(`/api/hotel-deals/`)
+                        .then((resp) => {
+                            this.allTwentyFourHoursDeals = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                getAllHotels: function(){
+                    this.$http.get(`/api/hotel_details/`)
+                      .then((resp) => {
+                        this.allHotels = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getRoomByHotel: function(){
+                    this.$http.get(`/api/room/?hotel_id=${this.hotel_id}`)
+                      .then((resp) => {
+                        this.allRooms = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getTwentyFourHoursDealsPorzotoks: function(){
+                    this.$http.get(`/api/porzotok-deals/`)
+                      .then((resp) => {
+                        this.TwentyFourHoursDealsPorzotoks = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

@@ -1,0 +1,293 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Hotel Facilities List{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Hotel Facilites List</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Hotel Facilites List</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+        <div class="row layout-top-spacing" >
+
+                <div id="" class="col-lg-12 layout-spacing">
+                <div v-if="click_event" class="statbox widget box box-shadow" :style="'display:'+ hide_or_vis +';'">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Edit Hotel Facilites</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+                        <form @submit.prevent="updateHotelsFacilites(update_val.hotel_facilites_id)">
+                            {% csrf_token %}
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label for="roomPriceUpdate">Price</label>
+                                    <input v-if="update_bool" type="text" class="form-control" id="roomPriceUpdate" :value="update_val.price.price" placeholder="Enter Room Price" required="">  
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <label for="roomOfferPriceUpdate">Offer Price</label>
+                                    <input v-if="update_bool" type="text" class="form-control" id="roomOfferPriceUpdate" :value="update_val.price.offer_price" placeholder="Enter Room Offer Price" required="">  
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <label for="priceEntryDateUpdate">Price Entry Date</label>
+                                    <input v-if="update_bool" type="date" class="form-control" id="priceEntryDateUpdate" :value="update_val.price.price_entry_date" placeholder="">  
+                                </div>
+                            </div>
+
+                          <button type="submit" class="btn btn-primary mt-3">Update Hotel Facilites</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Hotel Facilites List</h4>
+
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="row">
+                    <div class="col-sm-4">
+                        Show
+                        <select v-model="perPage" @change="handlePageSizeChange($event)">
+                            <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                        </select>
+                        entries
+                    </div>
+                
+                    <div class="col-sm-4 offset-sm-4">
+                      <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search" v-model="searchKey"  @keyup="getSearchData" />
+                      </div>
+                    </div>
+                </div>
+                
+
+                <div class="table-responsive mb-4 mt-4">
+
+                    <table class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <!-- <th>Hotel Name</th> -->
+                                <th>Facilites Name</th>
+                                <th>Price</th>
+                                <th>Offer Price</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-if="allHotelFacilites.length" v-for="(h_fac, index) in allHotelFacilites" :key="h_fac.hotel_facilites_id">
+                                <td>${ index+1 }</td>
+                                <!-- <td>${ h_fac.hotel_details.hotel_name }</td> -->
+                                <td>${ h_fac.facilites_details.facilites_name }</td>
+                                <td>TK. ${ h_fac.price.price }</td>
+                                <td>TK. ${ h_fac.price.offer_price }</td>
+
+                                <td class="text-center">
+                                    <a @click.prevent="editHotelFacilites(h_fac.hotel_facilites_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a @click.prevent="deleteHotelFacilites(h_fac.hotel_facilites_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            <tr v-show="!allHotelFacilites.length" class="text-center"><td colspan="8">No Data</td></tr>
+
+                        </tbody>
+                        
+                    </table>
+
+                     <div v-if="allHotelFacilites.length">
+                        <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last"></b-pagination>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allHotelFacilites : [],
+                error: '',
+                update_val : [],
+                click_event : false,
+                update_bool : false,
+                update_price_id:0,
+                hide_or_vis : "none",
+                logged_user_id: {{ request.session.uid }},
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+                searchKey: null,
+            },
+            mounted: function() {
+                this.getAllHotelFacilites();
+            },
+            methods: {
+                async getAllHotelFacilites() {
+                    await this.$http.get(`/admin-api/hotels-facilites-list/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allHotelFacilites = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllHotelFacilites();
+                },
+                async getSearchData() {
+                    if (this.searchKey != null && this.logged_user_id != null) {
+                        const result = await this.$http.get(`/admin-api/hotel-facilities-search/?user_id=${this.logged_user_id}&key=${this.searchKey}`);
+                        if (result.data.error === false) {
+                            this.allHotelFacilites = result.data.data;
+                            this.totalItems = result.data.count;
+                        }
+                    } 
+                },
+                editHotelFacilites: function(fid){
+                    this.click_event = true;
+                    this.hide_or_vis = "block";
+                    // back to top when edit
+                    // window.scrollTo(0,0);
+                    let scrollingElement = (document.scrollingElement || document.body);
+                    $(scrollingElement).animate({
+                        scrollTop: 0
+                    }, 500);
+                    // send request
+                    this.$http.get(`/admin-api/hotels-facilites/${fid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.update_bool = true;
+                                this.update_val = resp.data.data;
+                                this.update_price_id = resp.data.data.price_id;
+
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                updateHotelsFacilites: function(fid){
+                    let form_data = new FormData();
+                    let price_form_data = new FormData();
+                    price_form_data.append('price', document.getElementById('roomPriceUpdate').value);
+                    price_form_data.append('offer_price', document.getElementById('roomOfferPriceUpdate').value);
+                    price_form_data.append('price_entry_date', document.getElementById('priceEntryDateUpdate').value);
+                    
+                    this.$http.put(`/admin-api/add-price/${this.update_price_id}/`, price_form_data)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Hotel Facilites Update Successfully.',
+                                    messageColor: 'black'
+                                });
+                                setInterval(function(){ 
+                                    error = false;
+                                 }, 3000);
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                    form_data.append('price_id', this.update_price_id);
+
+                    this.$http.put(`/admin-api/hotels-facilites/${fid}/`, form_data)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.click_event = false;
+                                this.msg = resp.data.message;
+                                this.getAllHotelFacilites();
+                                setInterval(function(){ 
+                                    error = false;
+                                 }, 3000);
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                deleteHotelFacilites: function(fid){
+                    swal({
+                      title: 'Are you sure?',
+                      text: "You won't be able to revert this!",
+                      type: 'warning',
+                      showCancelButton: true,
+                      confirmButtonText: 'Delete',
+                      padding: '2em'
+                    }).then((result) => {
+                      if (result.value){
+
+                        this.$http.delete(`/admin-api/hotels-facilites/${fid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Hotel Facilites Deleted Successfully',
+                                    messageColor: 'black'
+                                });
+                                this.getAllHotelFacilites();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+
+                      }
+                    });
+                },
+            },
+            watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllHotelFacilites();
+                  }
+                }
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'backEnd/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Gallery{% endblock  %}
+
+{% block custom_css %}
+    <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link href="{% static 'backEnd/plugins/file-upload/file-upload-with-preview.min.css' %}" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/select2/select2.min.css' %}">
+    <link href="{% static 'backEnd/assets/css/components/custom-carousel.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL STYLES -->
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Gallery</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Gallery</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+    <div class="row layout-top-spacing">
+        <!-- add form start -->
+        <div id="addRoomForm" class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4 v-if="click_event">Update Gallery</h4>
+                            <h4 v-else>Add Gallery</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <form @submit.prevent="UploadImage" method="post" enctype="multipart/form-data">
+                	
+                    <div class="col-lg-6 layout-spacing">
+                        <select class="form-control disabled-results" id="hotel_name">
+                            <option selected="selected">Select Hotel For Gallery</option>
+                            <option v-for="hotel in Allhotels" :value="hotel.image_galary_details_id">${ hotel.hotel_name }</option>
+                        </select>
+                    </div>
+                	<div id="fuMultipleFile" class="col-lg-10 layout-spacing">
+                		
+	                    <div class="statbox widget box box-shadow">
+	                        <div class="custom-file-container" data-upload-id="mySecondImage">
+							    <label>Upload (Allow Multiple) <a href="javascript:void(0)" class="custom-file-container__image-clear" title="Clear Image">x</a></label>
+							    <label class="custom-file-container__custom-file" >
+							        <input type="file" class="custom-file-container__custom-file__custom-file-input" @change="onFileChange" name="h_image" multiple>
+							        <input type="hidden" name="MAX_FILE_SIZE" value="10485760" />
+							        <span class="custom-file-container__custom-file__custom-file-control"></span>
+
+							    </label>
+							    <div class="custom-file-container__image-preview"></div>
+							    <button class="btn btn-success" style="float: right;">SUBMIT</button>
+							</div>
+	                    </div>
+	                </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div id="with_captions" class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">                                
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Gallery View</h4> 
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 layout-spacing">
+                    <select class="form-control" v-model="hotel_name_g" @change="onGalleyChange()">
+                        <option v-for="hotel in Allhotels" :value="hotel.image_galary_details_id">${ hotel.hotel_name }</option>
+                    </select>
+                </div>
+                <div class="widget-content widget-content-area">
+                    <div class="col-lg-12 col-md-12">
+                        <div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel">
+                            <ol class="carousel-indicators">
+                                <li v-for="(item, index) in AllImages" v-if="index == 0" :key="item.image_id" data-target="#carouselExampleCaptions" :data-slide-to="index" class="active"></li>
+                                <li v-else data-target="#carouselExampleCaptions" :data-slide-to="index"></li>
+                            </ol>
+                            <div class="carousel-inner">
+                                <div v-for="(item, index) in AllImages" v-if="index == 0" class="carousel-item active">
+                                    <img class="d-block w-100" :src="item.Image" alt="First slide">
+                                    <!-- <div class="carousel-caption d-none d-sm-block">
+                                        <h3>First slide</h3>
+                                        <h5>Lorem ipsum dolor sit amet, dolore magna aliqua.</h5>
+                                    </div> -->
+                                </div>
+                                <div v-else class="carousel-item">
+                                    <img class="d-block w-100" :src="item.Image" alt="Second slide">
+                                    <!-- <div class="carousel-caption d-none d-sm-block">
+                                        <h3>Second slide</h3>
+                                        <h5>Lorem ipsum dolor sit amet, dolore magna aliqua.</h5>
+                                    </div> -->
+                                </div>
+                            </div>
+                            <a class="carousel-control-prev" href="#carouselExampleCaptions" role="button" data-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                            <a class="carousel-control-next" href="#carouselExampleCaptions" role="button" data-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>	
+    <div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;">
+        <p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">${msg}</p>
+        <button class="action" style="color: rgb(37, 213, 228);">Dismiss</button>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+        
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <script src="{% static 'backEnd/plugins/file-upload/file-upload-with-preview.min.js' %}"></script>
+
+    <script src="{% static 'backEnd/plugins/select2/select2.min.js' %}"></script>
+    <script src="{% static 'backEnd/plugins/select2/custom-select2.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS --> 
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                h_image : [],
+                // user_type_id: '',
+                msg : '',
+                error: '',
+                update_val : '',
+                hotel_name_g: '',
+                click_event : false,
+                update_bool: false,
+                allCountries: [],
+                allStateList: [],
+                allCityList: [],
+                allHotelUsers: [],
+                Allhotels: [],
+                AllImages: [],
+            },
+            mounted: function() {
+            	$(".disabled-results").select2();
+            	this.getAllHotels();
+                var secondUpload = new FileUploadWithPreview('mySecondImage');
+            },
+            methods: {
+                UploadImage: function(){
+                	let form_data = new FormData();
+                	form_data.append('image_galary_details_id', document.getElementById('hotel_name').value);
+                	for( var i = 0; i < this.h_image.length; i++ ){
+                      let file = this.h_image[i];
+                      form_data.append('Image', file);
+                    }
+                    console.log(form_data);
+                    this.$http.post(`/api/image/`, form_data)
+                      .then((resp) => {
+                        console.log(resp.data);
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                onFileChange(event) {
+                    this.h_image = event.target.files;
+                },
+                getAllHotels: function(){
+                    this.$http.get(`/api/hotel_details/`)
+                      .then((resp) => {
+                        this.Allhotels = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                onGalleyChange: function(event){
+                    this.$http.get(`/api/image/?galley_id=${this.hotel_name_g}`)
+                      .then((resp) => {
+                        this.AllImages = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

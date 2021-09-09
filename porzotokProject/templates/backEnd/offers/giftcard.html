@@ -1,0 +1,261 @@
+{% extends 'backEnd/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || GiftCard{% endblock  %}
+
+{% block custom_css %}
+    <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">GiftCard</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">GiftCard</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add GiftCard</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addCard" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="giftcardName">GiftCard Name</label>
+                                <input type="text" class="form-control" v-model="gift_card_name" id="giftcardName" placeholder="Enter GiftCard Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="giftcardNumber">GiftCard Number</label>
+                                <input type="text" class="form-control" v-model="gift_card_number" id="giftcardNumber" placeholder="Enter GiftCard Number">
+                            </div>                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="giftcardPIN">GiftCard Pin</label>
+                                <input type="text" class="form-control" v-model="gift_card_pin" id="giftcardPIN" placeholder="Enter GiftCard Pin">
+                            </div> 
+
+                            <div class="form-group col-md-6">
+                                <label for="ExpDate">Exp Date</label>
+                                <input type="date" class="form-control" v-model="gift_card_exp_date" id="ExpDate">
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+
+                            <div class="form-group col-md-12">
+                                <label for="giftcardAmount">GiftCard Amount</label>
+                                <input type="number" class="form-control" v-model="gift_card_amount" id="giftcardAmount" placeholder="Enter GiftCard Amount">
+                            </div>
+
+                        </div>
+                        
+                      <button type="submit" class="btn btn-primary mt-3">Add GiftCard</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">GiftCard List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="table-responsive mb-4 mt-4">
+                    <table id="dataTableContent" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>                               
+                                <th>Number</th>
+                                <th>PIN</th>
+                                <th>Exp Date</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-for="gift in allCards" :key="gift.gift_card_id">
+                                <td>${ gift.gift_card_id }</td>
+                                <td>${ gift.gift_card_name }</td>
+                                <td>${ gift.gift_card_number }</td>
+                                <td>${ gift.gift_card_pin }</td>
+                                <td>${ gift.gift_card_exp_date }</td>
+                                <td>TK. ${ gift.gift_card_amount }</td>
+
+                                <td class="text-center">
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>
+    <div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;">
+        <p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">${msg}</p>
+        <button class="action" style="color: rgb(37, 213, 228);">Dismiss</button>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page PAGE of PAGES",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  MENU",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allCards : [],
+                gift_card_name : null,
+                gift_card_number : null,
+                gift_card_pin : null,
+                gift_card_exp_date : null,
+                gift_card_amount : null,  
+                msg : '',
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+            },
+            mounted: function() {
+                this.getAllCards();
+            },
+            methods: {
+                addCard: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('gift_card_name', this.gift_card_name);
+                    form_data.append('gift_card_number', this.gift_card_number);
+                    form_data.append('gift_card_pin', this.gift_card_pin);
+                    form_data.append('gift_card_exp_date', this.gift_card_exp_date);
+                    form_data.append('gift_card_amount', this.gift_card_amount);
+                    
+
+                    this.$http.post(`/api/giftcard/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.error = true
+                                this.msg = resp.data.message;
+
+                                // clear all fields after successfully insert
+                                this.gift_card_name = '';
+                                this.gift_card_number = '';
+                                this.gift_card_pin = '';
+                                this.gift_card_exp_date = '';
+                                this.gift_card_amount = '';
+                                
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                // get all cupon
+                                this.getAllCards();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getAllCards: function() {
+                    this.$http.get(`/api/giftcard/`)
+                        .then((resp) => {
+                            this.allCards = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

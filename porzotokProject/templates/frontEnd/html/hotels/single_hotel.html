@@ -1,0 +1,1360 @@
+{% extends 'frontEnd/html/front_layouts_single_page.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok | Hotel Details{% endblock  %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'frontEnd/assets/css/customcss/v-calendar.min.css' %}">
+<link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/single_hotel.css' %}">
+{% endblock %}
+
+{% block main_content %}
+<div>
+    <!-- Breadcrumb -->
+    <div class="border-bottom mb-7">
+        <div class="container">
+            <nav class="py-3" aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-no-gutter mb-0 flex-nowrap flex-xl-wrap overflow-auto overflow-xl-visble">
+                    <li class="breadcrumb-item flex-shrink-0 flex-xl-shrink-1"><a href="{% url 'webapp:home' %}">Home</a></li>
+                    <li class="breadcrumb-item flex-shrink-0 flex-xl-shrink-1"><a href="{% url 'webapp:hotel' %}">Hotels</a></li>
+                    <!-- <li class="breadcrumb-item flex-shrink-0 flex-xl-shrink-1"><a href="javascript:">{{ single_hotel_data.data.city.city_name }} Hotels</a></li> -->
+                    <li class="breadcrumb-item flex-shrink-0 flex-xl-shrink-1 active" aria-current="page">{{ single_hotel_data.data.hotel_name }}</li>
+                    <span style="display: none;" id="hotelID">{{ single_hotel_data.data.hotel_id }}</span>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <!-- End Breadcrumb -->
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-xl-9">
+                <div class="d-block d-md-flex flex-center-between align-items-start mb-2">
+                    <div class="mb-3">
+                        <ul class="list-unstyled mb-2 d-md-flex flex-lg-wrap flex-xl-nowrap mb-2">
+                            <li class="border border-brown badge-primary rounded-xs d-flex align-items-center text-lh-1 py-1 px-3 mr-md-2 mb-2 mb-md-0 mb-lg-2 mb-xl-0">
+                                <span class="font-weight-normal text-white font-size-14">Newly renovated</span>
+                            </li>
+                            <li class="border border-brown badge-primary rounded-xs d-flex align-items-center text-lh-1 py-1 px-3 mr-md-2 mb-2 mb-md-0 mb-lg-2 mb-xl-0 mb-md-0">
+                                <span class="font-weight-normal font-size-14 text-white">Free Wi-Fi</span>
+                            </li>
+                        </ul>
+                        <div class="d-block d-md-flex flex-horizontal-center mb-2 mb-md-0">
+                            <h4 class="font-size-23 font-weight-bold mb-1">{{ single_hotel_data.data.hotel_name }}</h4>
+                            <div class="ml-3 font-size-10 letter-spacing-2">
+                                <span class="d-block green-lighter ml-1">
+
+                                    {% with rating=single_hotel_data.data.hotel_id|average_rating_count %} 
+                                        {% for i in 1|range:6 %}
+                                            {% if i <= rating %}
+                                                <span class="fas fa-star ac-color"></span>
+                                            {% else %}
+                                                <span class="fas fa-star"></span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+
+                                </span>
+                            </div>
+                        </div>
+                        <div class="d-block d-md-flex flex-horizontal-center font-size-14 text-gray-1">
+                            <i class="icon flaticon-placeholder mr-2 font-size-20"></i> {{ single_hotel_data.data.city.city_name }}, {{ single_hotel_data.data.city.state.country.country_name }}
+                            <a @click="mapDisplay" href="javascript:" class="ml-1 d-block d-md-inline text-primary text-hovver"> - View on map</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-show="showMap" id="map" style="width: 100%; height: 450px; margin-bottom: 40px;"></div>
+
+                <div class="pb-4 mb-2">
+                    <div class="position-relative">
+                        <!-- Images Carousel -->
+                        <div id="sliderSyncingNav" class="js-slick-carousel u-slick mb-2"
+                            data-infinite="true"
+                            data-arrows-classes="d-none d-lg-inline-block u-slick__arrow-classic u-slick__arrow-centered--y rounded-circle"
+                            data-arrow-left-classes="flaticon-back u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left ml-lg-2 ml-xl-4"
+                            data-arrow-right-classes="flaticon-next u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right mr-lg-2 mr-xl-4"
+                            data-nav-for="#sliderSyncingThumb">
+
+                            {% for hotel_image in single_hotel_data.data.image_url %}
+                            <div class="js-slide">
+                                <img style="width:100%; height:400px; " class="img-fluid border-radius-3" src="{{ hotel_image.Image }}" alt="{{ single_hotel_data.data.hotel_name }}">
+                            </div>
+                            {% endfor %}
+
+                        </div>
+
+                        <div id="sliderSyncingThumb" class="js-slick-carousel u-slick u-slick--gutters-4 u-slick--transform-off"
+                            data-infinite="true"
+                            data-slides-show="10"
+                            data-is-thumbs="true"
+                            data-nav-for="#sliderSyncingNav"
+                            data-responsive='[{
+                                "breakpoint": 992,
+                                "settings": {
+                                    "slidesToShow": 4
+                                }
+                            }, {
+                                "breakpoint": 768,
+                                "settings": {
+                                    "slidesToShow": 3
+                                }
+                            }, {
+                                "breakpoint": 554,
+                                "settings": {
+                                    "slidesToShow": 2
+                                }
+                            }]'>
+
+                            
+                            {% for hotel_image in single_hotel_data.data.image_url %}
+                            <div class="js-slide" style="cursor: pointer;">
+                                <img class="img-fluid border-radius-3 height-65" src="{{ hotel_image.Image }}" alt="{{ single_hotel_data.data.hotel_name }}">
+                            </div>
+                            {% endfor %}
+
+                            
+                        </div>
+                        <!-- End Images Carousel -->
+                    </div>
+                </div>
+
+                <div class="border-bottom position-relative">
+                    <h5 id="scroll-description" class="font-size-21 font-weight-bold text-dark">
+                        Description
+                    </h5>
+
+                    <p>
+                        <span v-show="defaultText">{{ single_hotel_data.data.hotel_info|truncatewords:30 }}</span>
+                        <span class="collapse" id="collapseLinkExample">{{ single_hotel_data.data.hotel_info }}</span>
+                    </p>
+                    
+                    <a class="link-collapse link-collapse-custom gradient-overlay-half mb-5 d-inline-block border-bottom border-blackk" data-toggle="collapse" href="#collapseLinkExample" role="button" aria-expanded="false" aria-controls="collapseLinkExample">
+                        <span class="link-collapse__default font-size-14" @click="viewMoreHide">View More <i class="flaticon-down-chevron font-size-10 ml-1"></i></span>
+                       <!--  <span class="link-collapse__active font-size-14">View Less <i class="flaticon-arrow font-size-10 ml-1"></i></span> -->
+                    </a>
+                </div>
+
+                <div class="border-bottom py-4">
+                    <h5 id="scroll-amenities" class="font-size-21 font-weight-bold text-dark mb-4">
+                        Select Your Room
+                    </h5>
+
+                    {% for room in single_hotel_data.data.room_details %}
+                    <div class="card border-color-7 mb-5 overflow-hidden">
+                        
+                        <div class="position-absolute top-0 right-0 mr-md-1 mt-md-1">
+                            {% if room.is_deals %}
+                            <div class="rounded-xs d-flex align-items-center text-lh-1 py-1 px-3 mr-2 mt-2 badge-primary">
+                                <span class="font-weight-normal text-white font-size-14">24 Hour Deals</span>
+                            </div>
+                            {% else %}
+                            <div class="border border-blackk bg-blackk rounded-xs d-flex align-items-center text-lh-1 py-1 px-3 mr-2 mt-2">
+                                <span class="font-weight-normal text-white font-size-14">Today's best offer</span>
+                            </div>
+                            {% endif %}
+
+                        </div>
+                        
+
+                        <div class="product-item__outer w-100">
+                            <div class="row">
+                                <div class="col-md-5 col-lg-5 col-xl-3dot5">
+                                    <div class="pt-5 pb-md-5 pl-4 pr-4 pl-md-5 pr-md-2 pr-xl-2">
+                                        <div class="product-item__header mt-2 mt-md-0">
+                                            <div class="position-relative">
+                                                <img class="resp-img img-fluid rounded-sm" src="{{ room.image_url.0.Image }}" alt="{{ room.room_name }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col col-md-7 col-lg-7 col-xl-5 flex-horizontal-center pl-xl-0">
+                                    <div class="w-100 position-relative m-4 m-md-0">
+                                        <a href="#ontargetModal{{ room.room_id }}" data-modal-target="#ontargetModal{{ room.room_id }}" data-modal-effect="fadein" class="mb-2 d-inline-block">
+                                            <span class="font-weight-bold font-size-17 text-dark text-dark">{{ room.room_name }}</span>
+                                        </a>
+                                        <div class="mt-1 pt-2">
+                                            <div class="d-flex mb-1">
+
+                                                <div class="ml-0">
+                                                    <ul class="list-unstyled mb-0 two-columns">
+                                                        {% for roomFacilities in room.facilites_details %}
+                                                        <li class="media mb-3 text-gray-1">
+                                                            <small class="mr-2">
+                                                                <i class="fas fa-check-square font-size-17 text-primary"></i>
+                                                            </small>
+                                                            <div class="media-body text-black font-size-1 ml-1">
+                                                                {{ roomFacilities.facilites_id.facilites_name }}
+                                                            </div>
+                                                        </li> 
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <!-- On Target Modal -->
+                                            <a class="font-size-14 text-primary text-hovver text-underline d-block" href="#ontargetModal{{ room.room_id }}"
+                                                data-modal-target="#ontargetModal{{ room.room_id }}"
+                                                data-modal-effect="fadein">
+                                                    Room Photos and Details
+                                            </a>
+                                            
+                                            <!-- End On Target Modal -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col col-xl-3dot5 align-self-center py-4 py-xl-0 border-top border-xl-top-0">
+                                    <div class="flex-content-center border-xl-left py-xl-5 ml-4 ml-xl-0 justify-content-start justify-content-xl-center">
+                                        <div class="text-center my-xl-1">
+                                            {% if room.price_details.price == room.price_details.offer_price %}
+                                            <div class="mb-2 pb-1">
+                                                <span class="font-weight-bold font-size-18 ml-1"> {{ room.price_details.offer_price }} tk</span>
+                                                <span class="font-size-14 text-black"> / night</span>
+                                            </div>
+                                            {% else %}
+                                            <div class="text-left pb-1 pl-2 mt-2">
+                                                <span class="font-size-14 text-red-light-2"> <del>{{ room.price_details.price }} tk</del> </span>
+                                            </div>
+                                            <div class="mb-2 pb-1">
+                                                <span class="font-weight-bold font-size-18 ml-1"> {{ room.price_details.offer_price }} tk</span>
+                                                <span class="font-size-14 text-black"> / night</span>
+                                            </div>
+                                            {% endif %}
+
+                                            <button @click.prevent="directAddToCart('{{room.room_id}}');" type="submit" class="btn btn-outline-primary border-radius-3 border-width-2 px-4 font-weight-bold min-width-200 py-2 text-lh-lg">Add to Cart</button>
+                                            
+                                            {% if room.is_deals %}
+                                            <a href="javascript:" class="btn btn-outline-primary border-radius-3 border-width-2 px-4 font-weight-bold min-width-200 py-2 text-lh-lg mt-2" @click="dealsAddToCart('{{room.room_id}}', '{{room.deal_start_date}}');">Book Now</a>
+                                            {% else %}
+                                            <a href="#bookNowModal{{ room.room_id }}"
+                                                data-modal-target="#bookNowModal{{ room.room_id }}"
+                                                data-modal-effect="fadein" class="btn btn-outline-primary border-radius-3 border-width-2 px-4 font-weight-bold min-width-200 py-2 text-lh-lg mt-2" @click="checkRoomIsAvailableOrNot({{ room.room_id }});">Book Now</a>
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- start room photos and details modal -->
+                    <div id="ontargetModal{{ room.room_id }}" class="js-modal-window u-modal-window u-modal-window-custom container" data-modal-type="ontarget" data-open-effect="fadeIn" data-close-effect="fadeOut" data-speed="500">
+                        <div class="card rounded border-0 mx-3 mx-md-4 mx-xl-0 mb-4 mb-md-0">
+                            <div class="row no-gutters position-relative">
+                                <button type="button" class="border-0 width-50 height-50 bg-logo-color z-index-2 flex-content-center position-absolute rounded-circle mt-n4 mr-n4 top-0 right-0" aria-label="Close" onclick="Custombox.modal.close();">
+                                    <i aria-hidden="true" class="flaticon-close text-white font-size-14"></i>
+                                </button>
+                                <div class="col-xl-3 mb-4 mb-xl-0 order-1 order-xl-0">
+                                    <div class="border-bottom">
+                                        <div class="px-4 py-4">
+                                            <div class="font-weight-medium font-size-19">{{ room.room_name }}</div>
+                                            <div class="mt-2">
+                                                <span class="mr-1 font-size-14 text-gray-1">From</span>
+                                                <span class="font-weight-bold font-size-24">{{ room.price_details.offer_price }} tk</span>
+                                                <span class="font-size-14 text-gray-1"> / night</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pl-4 pt-4 h-100">
+                                        <div class="font-weight-medium mb-3">Facilities</div>
+                                        <div class="js-scrollbar height-570">
+                                            <ul class="d-block list-unstyled">
+                                                {% for roomFacilities in room.facilites_details %}
+                                                <li class="mb-3">
+                                                    <i class="fas fa-check-square mr-3 text-primary font-size-24"></i>
+                                                    {{ roomFacilities.facilites_id.facilites_name }}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xl-9">
+                                    <p></p><br>
+                                    <div class="js-slick-carousel u-slick rounded-right height-760 overflow-hidden width-960 ml-auto"
+                                        data-slides-show="1"
+                                        data-slides-scroll="1"
+                                        data-pagi-classes="text-right justify-content-end position-absolute right-0 bottom-0 left-0 u-slick__pagination u-slick__pagination--white mb-5 mr-5"
+                                        data-arrows-classes="u-slick__arrow-classic u-slick__arrow-centered--y"
+                                        data-arrow-left-classes="fas fa-arrow-left font-size-23 bg-transparent text-white u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left ml-lg-2 ml-xl-4"
+                                        data-arrow-right-classes="fas fa-arrow-right font-size-23 bg-transparent text-white u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right mr-lg-2 mr-xl-4">
+                                        {% for img in room.image_url %}
+                                        <div class="js-slide gradient-overlay-half-bg-gradient-v7">
+                                            <img class="img-fluid w-100 h-fixed position-relative" src="{{ img.Image }}" alt="{{ room.room_name }}">
+                                            <h6 class="z-index-2 font-weight-bold text-white font-size-18 ml-4 mb-4 position-absolute bottom-0"></h6>
+                                        </div>
+                                        {% endfor %}
+                                    </div><br>
+                                    <div class="col-xl-12">
+                                        <div>
+                                            <dl>
+                                                <h4>Room Description</h4>
+                                                <dd>{{ room.room_description }}</dd>
+                                            </dl><br>
+                                            <br>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end room photos and details modal -->
+                    <!-- start book now modal -->
+                    <div id="bookNowModal{{ room.room_id }}" class="js-modal-window u-modal-window u-modal-window-custom container bookNowModal" data-modal-type="ontarget" data-open-effect="fadeIn" data-close-effect="fadeOut" data-speed="500">
+                        <div class="card rounded border-0 mx-3 mx-md-4 mx-xl-0 mb-4 mb-md-0">
+                            <div class="row no-gutters position-relative">
+                                <button type="button" class="border-0 width-50 height-50 bg-logo-color z-index-2 flex-content-center position-absolute rounded-circle mt-n4 mr-n4 top-0 right-0" aria-label="Close" onclick="Custombox.modal.close();">
+                                    <i aria-hidden="true" class="flaticon-close text-white font-size-14"></i>
+                                </button>
+                                <div class="col-xl-3 mb-4 mb-xl-0 order-1 order-xl-0">
+                                    <div class="border-bottom">
+                                        <div class="px-4 py-4">
+                                            <div class="font-weight-medium font-size-19">{{ room.room_name }}</div>
+                                            <div class="mt-2">
+                                                <span class="font-weight-bold font-size-24">{{ room.price_details.offer_price }} tk</span>
+                                                <span class="font-size-14 text-gray-1"> / night</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pl-4 pt-4 h-100">
+                                        <div class="font-weight-medium mb-3">Facilities</div>
+                                        <div class="js-scrollbar height-570">
+                                            <ul class="d-block list-unstyled">
+                                                {% for roomFacilities in room.facilites_details %}
+                                                <li class="mb-3">
+                                                    <i class="fas fa-check-square mr-3 text-primary font-size-24"></i>{{ roomFacilities.facilites_id.facilites_name }}
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xl-9">
+                                    
+                                    <div class="row">
+                                        <div class="col-md-12">
+
+                                            <!-- Search Jobs Form -->
+                                            <div class="card" style="border: none; margin-top: 100px;">
+
+                                                <div class="card-body">
+                                                    <div v-if="errors.length" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                        <strong>Errors!</strong> ${ errors[0] }
+                                                    </div>
+                                                    <form class="js-validate">
+                                                      <div class="row d-block nav-select d-lg-flex mb-lg-3 px-2 px-lg-3 align-items-end">
+
+                                                        <div class="col-sm-12 col-md-4 mb-4 mb-lg-0 ">
+                                                            <!-- Input -->
+                                                            <span class="d-block text-gray-1 text-left font-weight-normal mb-0">Check In Time</span>
+                                                            <div>
+                                                                <v-date-picker v-model="check_in_time" mode="date">
+                                                                  <template v-slot="{ inputValue, inputEvents }">
+                                                                    <input class="px-2 py-1 border rounded" :value="inputValue" v-on="inputEvents" placeholder="Enter Check In Time" @change="checkInDate" />
+                                                                  </template>
+                                                                </v-date-picker>
+                                                            </div>
+                                                            <!-- End Input -->
+                                                        </div>
+
+                                                        <div class="col-sm-12 col-md-4 mb-4 mb-lg-0 ">
+                                                            <!-- Input -->
+                                                            <span class="d-block text-gray-1 text-left font-weight-normal mb-0">Check Out Time</span>
+                                                            <div>
+                                                                <v-date-picker v-model="check_out_time" mode="date">
+                                                                  <template v-slot="{ inputValue, inputEvents }">
+                                                                    <input class="px-2 py-1 border rounded" :value="inputValue" v-on="inputEvents" placeholder="Enter Check Out Time" @change="checkOutDate" />
+                                                                  </template>
+                                                                </v-date-picker>
+
+                                                            </div>
+                                                            <!-- End Input -->
+                                                        </div>
+
+                                                       
+
+                                                        <div class="col-sm-12 col-md-4 align-self-lg-end text-md-right">
+                                                            <a href="javascript:" class="btn btn-primary w-100 border-radius-3 mb-xl-0 mb-lg-1 transition-3d-hover" @click="addToCart('{{room.room_id}}');">Continue Booking</a>
+                                                        </div>
+                                                      </div>
+                                                      <!-- End Checkbox -->
+                                                    </form>
+
+                                                    <!-- calendar view -->
+                                                    <div class="calendar">
+
+                                                        <v-calendar :from-page="{ month: month, year: year }" :attributes='attributes' is-expanded />
+                                                        
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <!-- End Search Jobs Form -->
+
+
+                                            
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- end book now modal -->
+                    {% endfor %}
+
+                    <h5 id="scroll-amenities" class="font-size-21 font-weight-bold text-dark mb-4">
+                        Facilities
+                    </h5>
+                    <ul class="list-group list-group-borderless list-group-horizontal list-group-flush no-gutters row three-columns">
+
+                        {% for h_facilities in single_hotel_data.data.hotel_facilities_details %}
+                        <li class="col-md-4 list-group-item">
+                            <i class="fas fa-check-square font-size-24 text-primary mr-3"></i>
+                            <a href="javascript:" class="black-color">{{ h_facilities.facilites_details.facilites_name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <!-- start On facilitiesModal Modal -->
+                    <div id="facilitiesModal" class="js-modal-window-facilities u-modal-window u-modal-window-custom container" data-modal-type="ontarget" data-open-effect="fadeIn" data-close-effect="fadeOut" ata-speed="500">
+                        <div class="card rounded border-0 mx-3 mx-md-4 mx-xl-0 mb-4 mb-md-0">
+                            <div class="row no-gutters position-relative">
+                                <button type="button" class="border-0 width-50 height-50 bg-primary z-index-2 flex-content-center position-absolute rounded-circle mt-n4 mr-n4 top-0 right-0" aria-label="Close" onclick="Custombox.modal.close();">
+                                    <i aria-hidden="true" class="flaticon-close text-white font-size-14"></i>
+                                </button>
+                                <div class="col-xl-3 mb-4 mb-xl-0 order-1 order-xl-0">
+                                    <div class="border-bottom">
+                                        <div class="px-4 py-4">
+                                            <div class="font-weight-medium font-size-19">Deluxe Gold King Room</div>
+                                            <div class="mt-2">
+                                                <span class="mr-1 font-size-14 text-gray-1">From</span>
+                                                <span class="font-weight-bold font-size-24">16000 tk</span>
+                                                <span class="font-size-14 text-gray-1"> / night</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pl-4 pt-4 h-100">
+                                        <div class="font-weight-medium mb-3">Amentities</div>
+                                        <div class="js-scrollbar height-570">
+                                            <ul class="d-block list-unstyled">
+                                                <li class="mb-3">
+                                                    <i class="flaticon-wifi-signal mr-3 text-primary font-size-24"></i>Wifi
+                                                </li>
+                                                <li class="mb-3">
+                                                    <i class="flaticon-weightlifting mr-3 text-primary font-size-24"></i>Fitness center
+                                                </li>
+                                                
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xl-9">
+                                    <div class="js-slick-carousel u-slick rounded-right height-760 overflow-hidden width-960 ml-auto"
+                                        data-slides-show="1"
+                                        data-slides-scroll="1"
+                                        data-pagi-classes="text-right justify-content-end position-absolute right-0 bottom-0 left-0 u-slick__pagination u-slick__pagination--white mb-5 mr-5"
+                                        data-arrows-classes="u-slick__arrow-classic u-slick__arrow-centered--y"
+                                        data-arrow-left-classes="fas fa-arrow-left font-size-23 bg-transparent text-white u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left ml-lg-2 ml-xl-4"
+                                        data-arrow-right-classes="fas fa-arrow-right font-size-23 bg-transparent text-white u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right mr-lg-2 mr-xl-4">
+                                        <div class="js-slide gradient-overlay-half-bg-gradient-v7">
+                                            <img class="img-fluid w-100 position-relative" src="{% static 'frontEnd/assets/img/960x760/img1.jpg' %}" alt="Image Description">
+                                            <h6 class="z-index-2 font-weight-bold text-white font-size-18 ml-4 mb-4 position-absolute bottom-0">Swimming Pool</h6>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End On facilitiesModal Modal -->
+                </div>
+
+
+
+                <div id="stickyBlockEndPoint"></div>
+
+                <div class="border-bottom py-4">
+                    <h5 class="font-size-21 font-weight-bold text-dark mb-8">
+                        Showing verified guest comments
+                    </h5>
+                    <div v-for="review in allReview" class="media flex-column flex-md-row align-items-center align-items-md-start mb-0">
+                        <div class="mr-md-5">
+                            <a v-if="review.user_details.user_image" class="d-block" href="javascript:">
+                                <img class="img-fluid mb-3 mb-md-0 rounded-circle" :src="review.user_details.user_image" style="height:85px; width: 85px;  ">
+                            </a>
+                            <a v-else class="d-block" href="javascript:">
+                                <img class="img-fluid mb-3 mb-md-0 rounded-circle" src="{% static 'frontEnd\assets\img\85x85\avatar.jpg' %}" style="height:85px; width: 85px;  ">
+                            </a>
+
+                        </div>
+                        <div class="media-body text-center text-md-left">
+                            <div class="mb-4">
+                                <h6 class="font-weight-bold text-gray-3">
+                                    <a href="javascript:">${ review.user_details.user_name }</a>
+                                </h6>
+                                <div class="font-weight-normal font-size-14 text-gray-9 mb-2">${ dateTimeFormat(review.created_at, "fullDate") } at ${ dateTimeFormat(review.created_at, "time") }</div>
+                                <div class="d-flex align-items-center flex-column flex-md-row mb-2">
+                                    <button type="button" class="btn btn-xs badge-primary rounded-xs font-size-14 py-1 px-2 mr-2 mb-2 mb-md-0">${ review.rating }/5 </button>
+                                </div>
+                                <p class="text-lh-1dot6 pr-lg-5 mb-0">${ review.review }</p>
+                            </div>
+                            <div class="review" style="margin: 22px" v-for="subject in review.replay">
+                                    <div class="media-body text-center text-md-left">
+                                        <div class="mb-4">
+                                            <h5 class="font-weight-bold font-italic text-gray-3">
+                                                <img class="img-fluid mb-3 mb-md-0 rounded-circle" :src="subject.photo_details.logo_photo" style="height:50px; width: 50px;">
+                                                ${ subject.hotel_details.hotel_name }
+                                            </h5>
+                                            <div class="font-weight-normal font-size-14 text-gray-9 mb-2">${ dateTimeFormat(subject.created_at, "fullDate") } at ${ dateTimeFormat(subject.created_at, "time") }</div>
+                                            <!-- <div class="d-flex align-items-center flex-column flex-md-row mb-2">
+                                                <span class="font-weight-bold font-italic text-gray-3">Review Replay</span>
+                                            </div> -->
+                                            <p class="text-lh-1dot6 mb-0 pr-lg-5">${ subject.review_replay }</p>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="py-4" v-if="checkIsConfirmBooking">
+                    <h5 class="font-size-21 font-weight-bold text-dark mb-6">
+                        Write a Review
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-6">
+                            <h6 class="font-weight-bold text-dark mb-1">
+                                Rating
+                            </h6>
+                            <star-rating v-model="rating" :show-rating="false"></star-rating>
+                        </div>
+                            <div class="row mb-5 mb-lg-0">
+                                <div class="col-sm-12 mb-5">
+                                    <div class="js-form-message">
+                                        <div class="input-group" for="hotelReview">
+                                            <textarea class="form-control" id="hotelReview" rows="6" cols="77" name="text" placeholder="Comment" aria-label="Hi there, I would like to ..." required="" data-msg="Please enter a reason." data-error-class="u-has-error" data-success-class="u-has-success" v-model="review"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Input -->
+                                <div class="col d-flex justify-content-center justify-content-lg-start">
+                                    <button type="submit" @click.prevent="addReview" class="btn btn-primary mt-3">Submit Review</button>
+                                </div>
+                            </div>
+                        <!-- </form>  -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-xl-3">
+                <div class="mb-4">
+                    <div class="flex-horizontal-center">
+                        <ul class="ml-n1 list-group list-group-borderless list-group-horizontal custom-social-share">
+                            <li class="list-group-item px-1 py-0">
+                                <a href="#" class="height-45 width-45 border rounded border-width-2 flex-content-center">
+                                    <i class="flaticon-like font-size-18 text-dark"></i>
+                                </a>
+                            </li>
+                            <li class="list-group-item px-1 py-0">
+                                <a href="#" class="height-45 width-45 border rounded border-width-2 flex-content-center">
+                                    <i class="flaticon-share font-size-18 text-dark"></i>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="flex-horizontal-center ml-2">
+                            <div class="badge-primary rounded-xs px-1">
+                                <span class="badge font-size-19 px-2 py-2 mb-0 text-lh-inherit">{{single_hotel_data.data.hotel_id|average_rating_count}}/5</span>
+                            </div>
+
+                            <div class="ml-2 text-lh-1">
+                                <div class="ml-1">
+                                    {% with rating=single_hotel_data.data.hotel_id|average_rating_count %} 
+                                                                        
+                                            {% if rating == 5 %}
+                                                <h4 class="text-primary font-size-17 font-weight-bold mb-0">Excellent</h4>
+                                            {% elif rating == 4 %}
+                                                <h4 class="text-primary font-size-17 font-weight-bold mb-0">Very Good</h4>
+                                            {% elif rating == 0  %}
+                                                <h4 class="text-primary font-size-17 font-weight-bold mb-0">New Hotel</h4>
+                                            {% else %}
+                                                <h4 class="text-primary font-size-17 font-weight-bold mb-0">Good</h4>
+                                            {% endif %}
+                                        
+                                    {% endwith %}
+                                    
+                                    <span class="text-gray-1 font-size-14">({{single_hotel_data.data.hotel_id|total_review_count}} reviews)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <ul class="list-unstyled d-md-flex mb-5">
+                    <li class="border border-violet-1 bg-violet-1 rounded-xs d-flex align-items-center text-lh-1 py-1 px-3 mb-2 mb-md-0">
+                        <span class="font-weight-normal font-size-14 text-white">Lowest price includes</span>
+                    </li>
+                    <li class="border border-violet-1 rounded-xs d-flex align-items-center text-lh-1 py-1 px-4 ml-md-n1 mb-2 mb-md-0">
+                        <span class="font-weight-normal font-size-14 text-primary">Free breakfast</span>
+                    </li>
+                </ul>
+                <div class="mb-4">
+                    
+                    <div class="border border-color-7 rounded px-4 pt-4 pb-3 mb-5">
+                        <div class="px-2 pt-2">
+                            <a @click="mapDisplay" href="javascript:" class="d-block border rounded mb-4">
+                                <img class="img-fluid" src="{% static 'frontEnd/assets/img/map-markers/map.jpg' %}" alt="Image-Description">
+                            </a>
+                            <div class="flex-horizontal-center mb-4">
+                                <div class="border-primary border rounded-xs px-3 text-lh-1dot7 py-1">
+                                    <span class="font-size-21 font-weight-bold px-1 mb-0 text-lh-inherit text-primary">{{single_hotel_data.data.hotel_id|average_rating_count}}</span>
+                                </div>
+
+                                <div class="ml-2 text-lh-1">
+                                    <div class="ml-1">
+                                        <h4 class="text-primary font-size-17 font-weight-bold mb-0">Exceptional</h4>
+                                        <span class="text-gray-1 font-size-14">Location rating score</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="flaticon-placeholder-1 font-size-25 text-primary mr-3 pr-1"></i>
+                                <h6 class="mb-0 font-size-14 text-gray-1">
+                                    <a href="#">Better than 99% of properties in {{ single_hotel_data.data.city.city_name }} </a>
+                                </h6>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="flaticon-medal font-size-25 text-primary mr-3 pr-1"></i>
+                                <h6 class="mb-0 font-size-14 text-gray-1">
+                                    <a href="#">Exceptional location - Inside city</a>
+                                </h6>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="flaticon-home font-size-25 text-primary mr-3 pr-1"></i>
+                                <h6 class="mb-0 font-size-14 text-gray-1">
+                                    <a href="#">Popular neighborhood</a>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="border border-color-7 rounded mb-5">
+                        <div class="border-bottom">
+                            <div class="p-4">
+                                <span class="font-size-14">From</span>
+                                <span class="font-size-24 text-gray-6 font-weight-bold ml-1">{{ single_hotel_data.data.hotel_id|hotel_min_price }} tk</span>
+                                <span class="font-size-14"> / night</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            
+                            <span class="d-block text-gray-1 font-weight-normal mb-0 text-left">Check In - Out</span>
+                            <div class="mb-4">
+                                <div class="border-bottom border-width-2 border-color-1">
+                                    <div id="datepickerWrapperPick" class="u-datepicker input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="d-flex align-items-center mr-2 font-size-21">
+                                              <i class="flaticon-calendar text-primary font-weight-semi-bold"></i>
+                                            </span>
+                                        </div>
+                                        <input class="js-range-datepicker font-size-lg-16 ml-1 shadow-none font-weight-bold form-control hero-form bg-transparent border-0 flatpickr-input p-0" type="text" placeholder="July 7/2019" aria-label="July 7/2019"
+                                        data-rp-wrapper="#datepickerWrapperPick"
+                                        data-rp-type="range"
+                                        data-rp-date-format="M d / Y"
+                                        data-rp-default-date='["Jul 7 / 2020", "Aug 25 / 2020"]'>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            
+                            
+                            <span class="d-block text-gray-1 font-weight-normal mb-0 text-left">Guests</span>
+                            <div class="mb-4 position-relative">
+                                <div class="border-bottom border-width-2 border-color-1">
+                                    <a id="basicDropdownClickInvoker" class="dropdown-nav-link dropdown-toggle flex-horizontal-center pt-3 pb-2" href="javascript:;" role="button"
+                                        aria-controls="basicDropdownClick"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        data-unfold-event="click"
+                                        data-unfold-target="#basicDropdownClick"
+                                        data-unfold-type="css-animation"
+                                        data-unfold-duration="300"
+                                        data-unfold-delay="300"
+                                        data-unfold-hide-on-scroll="true"
+                                        data-unfold-animation-in="slideInUp"
+                                        data-unfold-animation-out="fadeOut">
+                                        <i class="flaticon-add-group d-flex align-items-center mr-3 font-size-20 text-primary font-weight-semi-bold"></i>
+                                        <span class="text-black font-size-16 font-weight-semi-bold mr-auto">2 Rooms - 3 Guests</span>
+                                    </a>
+                                    <div id="basicDropdownClick" class="dropdown-menu dropdown-unfold col m-0" aria-labelledby="basicDropdownClickInvoker">
+                                        <div class="w-100 py-2 px-3 mb-3">
+                                            <div class="js-quantity mx-3 row align-items-center justify-content-between">
+                                                <span class="d-block font-size-16 text-secondary font-weight-medium">Rooms</span>
+                                                <div class="d-flex">
+                                                    <a class="js-minus btn btn-icon btn-medium btn-outline-secondary rounded-circle" href="javascript:;">
+                                                        <small class="fas fa-minus btn-icon__inner"></small>
+                                                    </a>
+                                                    <input class="js-result form-control h-auto border-0 rounded p-0 max-width-6 text-center" type="text" value="1">
+                                                    <a class="js-plus btn btn-icon btn-medium btn-outline-secondary rounded-circle" href="javascript:;">
+                                                        <small class="fas fa-plus btn-icon__inner"></small>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-100 py-2 px-3 mb-3">
+                                            <div class="js-quantity mx-3 row align-items-center justify-content-between">
+                                                <span class="d-block font-size-16 text-secondary font-weight-medium">Adults</span>
+                                                <div class="d-flex">
+                                                    <a class="js-minus btn btn-icon btn-medium btn-outline-secondary rounded-circle" href="javascript:;">
+                                                        <small class="fas fa-minus btn-icon__inner"></small>
+                                                    </a>
+                                                    <input class="js-result form-control h-auto border-0 rounded p-0 max-width-6 text-center" type="text" value="1">
+                                                    <a class="js-plus btn btn-icon btn-medium btn-outline-secondary rounded-circle" href="javascript:;">
+                                                        <small class="fas fa-plus btn-icon__inner"></small>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-100 py-2 px-3">
+                                            <div class="js-quantity mx-3 row align-items-center justify-content-between">
+                                                <span class="d-block font-size-16 text-secondary font-weight-medium">Child</span>
+                                                <div class="d-flex">
+                                                    <a class="js-minus btn btn-icon btn-medium btn-outline-secondary rounded-circle" href="javascript:;">
+                                                        <small class="fas fa-minus btn-icon__inner"></small>
+                                                    </a>
+                                                    <input class="js-result form-control h-auto border-0 rounded p-0 max-width-6 text-center" type="text" value="1">
+                                                    <a class="js-plus btn btn-icon btn-medium btn-outline-secondary rounded-circle" href="javascript:;">
+                                                        <small class="fas fa-plus btn-icon__inner"></small>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-100 text-right py-1 pr-5">
+                                            <a class="text-primary font-weight-semi-bold font-size-16" href="#">Done</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary height-60 w-100 mb-xl-0 mb-lg-1 transition-3d-hover"><i class="flaticon-magnifying-glass mr-2"></i>Search</button>
+                            </div>
+                        </div>
+                    </div> -->
+
+
+                </div>
+            </div>
+        </div>
+        <!-- Product Cards Ratings With carousel -->
+
+        <!-- End Product Cards Ratings With carousel -->
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue.js' %}"></script>
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue-resources.js' %}"></script>
+<!-- VCalendar Javascript -->
+<script src="{% static 'frontEnd/assets/js/customjs/v-calendar.min.js' %}"></script>
+<script src="{% static 'frontEnd/assets/js/customjs/vue-star-rating.min.js' %}"></script>
+<!-- moment js for date time format -->
+<script src="{% static 'frontEnd/assets/js/customjs/moment.min.js' %}"></script>
+<!-- google map -->
+<script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyB2A-nlLItYi6MXm3DMWXDPFsN1ZKnt4oI" async></script>
+
+
+<script type="text/javascript">
+    Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+    Vue.component('star-rating', VueStarRating.default);
+</script>
+<!-- vue js scripts start -->
+<script type="text/javascript">
+
+    new Vue({
+        el: '#single_hotel',
+        delimiters: ['${','}'],
+        data: {
+            userCartDetails: [],
+            session_id: "{{ request.session.session_id }}",
+            user_id: "{{ request.session.user_id }}",
+            pro_cart_id: {{ pro_cart_id }},
+            isSessionActive: false,
+            isActive: {{ isActive }},
+            totalCartItemCount: 0,
+            check_in_time: null,
+            check_out_time: null,
+            errors: [],
+            name: null,
+            email: null,
+            mobile: null,
+            password: null,
+            gender: null,
+            nid_number: null,
+            date_of_birth: null,
+            country: null,
+            state: null,
+            city: null,
+            address: null,
+            login_mobile: null,
+            login_password: null,
+            user_name: "{{ request.session.user_name }}",
+            type: "{{ request.session.type }}",
+            time: "{{ request.session.time }}",
+            isLogin: "{{ request.session.isLogin }}",
+            rating: null,
+            review: '',
+            allReview: [],
+            // calendar
+            year: new Date().getFullYear(),
+            month: new Date().getMonth() + 1,
+            attributes: [],
+            checkIsConfirmBooking: false, 
+            defaultText: true,
+            lat: null,
+            long: null,
+            showMap: false,   
+        },
+        mounted: function() {
+            this.getUserCartDetails();
+            if(this.isLogin != ""){
+                this.isLogin = JSON.parse("{{ request.session.isLogin }}".toLowerCase());
+            }
+
+            if (this.isActive == 1) {
+                this.isSessionActive = true;
+            }else{
+                this.isSessionActive = false;
+            }
+
+            this.getReview();
+            this.checkActiveStatus();
+
+        },
+        computed: {
+            totalPrice: function(){
+                var sum = 0;
+                this.userCartDetails.cart_room_data.forEach(item => {
+                    sum += parseInt(item.room_details.price_details.offer_price);
+                });
+                return sum;
+            },
+            formatDateTime: function(){
+                this.allReview.forEach(item => {
+                    time = new Date(item.created_at);
+                });
+                return time;
+            }
+        },
+        methods: {
+            getUserCartDetails: function(){
+
+                if (this.user_id != 0) {
+                    this.$http.get(`/api/user-cart-details/?u_id=${this.user_id}`)
+                    .then((resp) => {
+                        this.userCartDetails = resp.data.data;
+                        // get total cart item
+                        this.totalCartItemCount = resp.data.data['cart_room_data'].length + resp.data.data['cart_food_data'].length + resp.data.data['cart_facilities_data'].length + resp.data.data['cart_package_data'].length;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                } else {
+                    this.$http.get(`/api/user-cart-details/?session_id=${this.session_id}`)
+                    .then((resp) => {
+                        this.userCartDetails = resp.data.data;
+                        // get total cart item
+                        this.totalCartItemCount = resp.data.data['cart_room_data'].length + resp.data.data['cart_food_data'].length + resp.data.data['cart_facilities_data'].length + resp.data.data['cart_package_data'].length;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }
+            },
+            addRoomToCartDetails: function(js_cartDetails) {
+                this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                this.$http.post(`/api/cart-details/`, js_cartDetails)
+                    .then((resp) => {
+                        
+                        if (resp.data.error === false) {
+                            this.check_in_time = null;
+                            this.check_out_time = null;
+                            iziToast.show({
+                                title: 'Success!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'green',
+                                message: 'Added Successfully in the Cart.',
+                                messageColor: 'black'
+                            });
+                        }else{
+                            this.check_in_time = null;
+                            this.check_out_time = null;
+                            iziToast.show({
+                                title: 'Opppps!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'red',
+                                message: 'Room Already exits in the cart.',
+                                messageColor: 'black'
+                            });
+                        }
+                        // refresh user cart data
+                        this.getUserCartDetails();
+                        // close modal
+                        Custombox.modal.close();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            addRoomToCartDetailsDirectCheckout: function(js_cartDetails) {
+                this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                this.$http.post(`/api/cart-details/`, js_cartDetails)
+                    .then((resp) => {
+                        
+                        if (resp.data.error === false) {
+                            this.check_in_time = null;
+                            this.check_out_time = null;
+                            window.location.href = '/checkout/';
+                        }else{
+                            this.check_in_time = null;
+                            this.check_out_time = null;
+                            iziToast.show({
+                                title: 'Opppps!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'red',
+                                message: resp.data.message,
+                                //message: 'Room Already exits in the cart.',
+                                messageColor: 'black'
+                            });
+                        }
+                        // refresh user cart data
+                        this.getUserCartDetails();
+                        // close modal
+                        Custombox.modal.close();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            dealsAddRoomToCartDetailsDirectCheckout: function(js_cartDetails) {
+                this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                this.$http.post(`/api/cart-details/`, js_cartDetails)
+                    .then((resp) => {
+                        
+                        if (resp.data.error === false) {
+                            window.location.href = '/checkout/';
+                        }
+                        // else{
+                        //     this.check_in_time = null;
+                        //     this.check_out_time = null;
+                        //     iziToast.show({
+                        //         title: 'Opppps!',
+                        //         position: 'topRight',
+                        //         timeout: 2000,
+                        //         color: 'red',
+                        //         message: resp.data.message,
+                        //         messageColor: 'black'
+                        //     });
+                        // }
+                        // refresh user cart data
+                        this.getUserCartDetails();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            addToCart: function(room_id) {
+                // validate check in and check out time field
+                this.errors = [];
+                if (!this.check_in_time) {
+                    this.errors.push("Please select check in time.");
+                    return false;
+                }
+                if (!this.check_out_time) {
+                    this.errors.push("Please select check out time.");
+                    return false;
+                }
+                // check user already or not
+                if (this.user_id != 0) {
+                    var requestedData = {'session_id': `${this.session_id}`, 'user_id': `${this.user_id}`};
+                } else {
+                    var requestedData = {'session_id': `${this.session_id}`};
+                }
+
+                let js = JSON.stringify(requestedData);
+
+                let checkInTime = moment(this.check_in_time). format('YYYY-MM-DD');
+                let checkOutTime = moment(this.check_out_time). format('YYYY-MM-DD');
+
+                if (this.isSessionActive == false) {
+                    this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                    this.$http.post(`/api/carts/`, js)
+                        .then((resp) => {
+                            let requestedforCardDetails = {'cart_id': `${resp.data.cart_id}`, 'room_id': `${room_id}`, 'check_in_time': `${checkInTime}`,'check_out_time': `${checkOutTime}`};
+                            let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                            this.addRoomToCartDetailsDirectCheckout(js_cartDetails);
+                            this.isSessionActive = true;
+                            this.pro_cart_id = resp.data.cart_id;
+                            // set into localStorage
+                            localStorage.setItem('cart_id', resp.data.cart_id);
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                    
+                } else {
+
+                    let requestedforCardDetails = {'cart_id': `${this.pro_cart_id}`, 'room_id': `${room_id}`, 'check_in_time': `${checkInTime}`,'check_out_time': `${checkOutTime}`};
+                    let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                    this.addRoomToCartDetailsDirectCheckout(js_cartDetails);
+                    // set into localStorage
+                    localStorage.setItem('cart_id', this.pro_cart_id);
+
+                }
+            },
+            dealsAddToCart: function(room_id, deal_start_date) {
+
+                // check user already or not
+                if (this.user_id != 0) {
+                    var requestedData = {'session_id': `${this.session_id}`, 'user_id': `${this.user_id}`};
+                } else {
+                    var requestedData = {'session_id': `${this.session_id}`};
+                }
+                // new code
+                console.log(deal_start_date);
+                let countNext24Hour = new Date(new Date(deal_start_date).getTime() + 60 * 60 * 24 * 1000);
+                console.log(countNext24Hour);
+                let checkInTime = moment(deal_start_date).format('YYYY-MM-DD');
+                console.log(checkInTime);
+                let checkOutTime = moment(countNext24Hour).format('YYYY-MM-DD');
+                console.log(checkOutTime);
+
+                return false;
+                // new code
+
+                let js = JSON.stringify(requestedData);
+
+                if (this.isSessionActive == false) {
+                    this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                    this.$http.post(`/api/carts/`, js)
+                        .then((resp) => {
+                            let requestedforCardDetails = {'cart_id': `${resp.data.cart_id}`, 'room_id': `${room_id}`, 'check_in_time': `${checkInTime}`,'check_out_time': `${checkOutTime}`};
+                            let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                            this.dealsAddRoomToCartDetailsDirectCheckout(js_cartDetails);
+                            this.isSessionActive = true;
+                            this.pro_cart_id = resp.data.cart_id;
+                            // set into localStorage
+                            localStorage.setItem('cart_id', resp.data.cart_id);
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                    
+                } else {
+
+                    let requestedforCardDetails = {'cart_id': `${this.pro_cart_id}`, 'room_id': `${room_id}`, 'check_in_time': `${checkInTime}`,'check_out_time': `${checkOutTime}`};
+                    let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                    this.dealsAddRoomToCartDetailsDirectCheckout(js_cartDetails);
+                    // set into localStorage
+                    localStorage.setItem('cart_id', this.pro_cart_id);
+
+                }
+            },
+            directAddToCart: function(room_id) {
+
+                // check user already or not
+                if (this.user_id != 0) {
+                    var requestedData = {'session_id': `${this.session_id}`, 'user_id': `${this.user_id}`};
+                } else {
+                    var requestedData = {'session_id': `${this.session_id}`};
+                }
+
+                let js = JSON.stringify(requestedData);
+
+                if (this.isSessionActive == false) {
+                    this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                    this.$http.post(`/api/carts/`, js)
+                        .then((resp) => {
+                            let requestedforCardDetails = {'cart_id': `${resp.data.cart_id}`, 'room_id': `${room_id}`};
+                            let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                            this.addRoomToCartDetails(js_cartDetails);
+                            this.isSessionActive = true;
+                            this.pro_cart_id = resp.data.cart_id;
+                            // set into localstorage
+                            localStorage.setItem('cart_id', resp.data.cart_id);
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                    
+                } else {
+
+                    let requestedforCardDetails = {'cart_id': `${this.pro_cart_id}`, 'room_id': `${room_id}`};
+                    let js_cartDetails = JSON.stringify(requestedforCardDetails);
+                    this.addRoomToCartDetails(js_cartDetails);
+                    // set into localstorage
+                    localStorage.setItem('cart_id', this.pro_cart_id);
+                }
+            },
+            calculateTotalDay: function(s_date, end_date){
+                var start_date = new Date(s_date);
+                var end_date = new Date(end_date);
+                var diff = end_date.getDate() - start_date.getDate();
+                return diff;
+            },
+            checkInDate: function(){
+                if (this.check_in_time) {
+                    this.errors = [];
+                    return true;
+                }
+            },
+            checkOutDate: function(){
+                if (this.check_out_time) {
+                    this.errors = [];
+                }
+
+                const totalDays = this.calculateTotalDay(this.check_in_time, this.check_out_time)
+                
+                if(this.check_in_time === this.check_out_time || totalDays <= 0){
+                    this.errors.push("Invalid Date selection.");
+                }
+            },
+            deleteCartRoom: function(room_cart_id){
+
+                if (this.user_id != 0) {
+                    this.$http.delete(`/api/user-cart-details/${room_cart_id}/?user_id=${this.user_id}`)
+                    .then((resp) => {
+                        this.getUserCartDetails();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }else{
+                    this.$http.delete(`/api/user-cart-details/${room_cart_id}/?session_id=${this.session_id}`)
+                    .then((resp) => {
+                        this.getUserCartDetails();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                } 
+            },
+            customerRegistration: function(){
+                let form_data = new FormData();
+                form_data.append('name', this.name);
+                form_data.append('email', this.email);
+                form_data.append('mobile', this.mobile);
+                form_data.append('password', this.password);
+
+                this.$http.post(`/user-register/`, form_data)
+                    .then((resp) => {
+                        this.user_id = resp.data.data.user_id;
+                        this.user_name = resp.data.data.user_name;
+                        this.type = resp.data.data.type;
+                        this.time = resp.data.data.time;
+                        this.isLogin = resp.data.data.isLogin;
+                        location.reload();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            userLogin: function(){
+                let form_data = new FormData();
+                form_data.append('mobile', this.login_mobile);
+                form_data.append('password', this.login_password);
+
+                this.$http.post(`/user-login/`, form_data)
+                    .then((resp) => {
+                        if (resp.data.data.isLogin == true) {
+                            this.user_id = resp.data.data.user_id;
+                            this.user_name = resp.data.data.user_name;
+                            this.type = resp.data.data.type;
+                            this.time = resp.data.data.time;
+                            this.isLogin = resp.data.data.isLogin;
+                        }else{
+                            iziToast.show({
+                                title: 'Oppps!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'red',
+                                message: 'Invalid credentials!',
+                                messageColor: 'black'
+                            });
+                        }
+                        
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+
+            checkRoomIsAvailableOrNot(room_id){
+
+                this.$http.get(`/api/check-room-availablity/?room_id=${room_id}`)
+                .then((resp) => {
+
+                    resp.data.data.forEach(checkTime => {
+                        var new_check_in_date = checkTime.check_in_date.split('-');
+                        var new_check_out_date = checkTime.check_out_date.split('-');
+
+                        var data = {
+                            highlight: {
+                                start: { color: 'red', fillMode: 'outline' },
+                                base: { color: 'red', fillMode: 'light' },
+                                end: { color: 'red', fillMode: 'outline' },
+                            },
+                            dates: { 
+                                start: new Date(new_check_in_date[0], new_check_in_date[1] - 1, new_check_in_date[2]), 
+                                end: new Date(new_check_out_date[0], new_check_out_date[1] - 1, new_check_out_date[2] - 1) 
+                            },
+                            popover: {
+                                label: 'Booked',
+                            },
+                        }
+
+                        this.attributes.push(data);
+
+                    });
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+                
+            },
+            getReview: function() {
+                var hotel_id = document.getElementById('hotelID').innerHTML;
+                this.$http.get(`/api/review/?hotel_id=${hotel_id}`)
+                    .then((resp) => {
+                        this.allReview = resp.data.data;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            checkActiveStatus: function() {
+                var hotel_id = document.getElementById('hotelID').innerHTML;
+                if (this.user_id != 0) {
+                    this.$http.get(`/api/review-bool/?user_id=${this.user_id}&hotel_id=${hotel_id}`)
+                    .then((resp) => {
+                        if (resp.data.data[0]) {
+                            if (resp.data.data[0].is_active) {
+                                this.checkIsConfirmBooking = true
+                            }
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }
+            },
+            addReview: function(){
+                var hotel_id = document.getElementById('hotelID').innerHTML;
+                let form_data = new FormData();
+                form_data.append('rating', this.rating);
+                form_data.append('review', this.review);
+                form_data.append('user_id', this.user_id);
+                form_data.append('hotel_id', hotel_id);
+                if (this.user_id != 0){
+                    this.$http.post(`/api/review/`, form_data)
+                        .then((resp) => {
+                            if (resp.data.error === false) {
+                                this.rating = null;
+                                this.review = "";
+                                this.checkIsConfirmBooking = false
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'green',
+                                    message: 'Thank You For Your Review.',
+                                    messageColor: 'black'
+                                });
+                                this.getReview();
+                            }else{
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong, Try Again.',
+                                    messageColor: 'black'
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                }
+            },
+            dateTimeFormat(date, dateType) {
+                const date1 = new Date(date);
+                if (dateType === "fullDate") {
+                    return moment(date1).format("MMMM D, YYYY");
+                } else {
+                    return moment(date1).format("hh:mm A");
+                }
+            },
+            customerLogout: function(){
+                this.$http.post(`/user-logout/`)
+                    .then((resp) => {
+                        if (resp.data.data.success == true) {
+                            this.user_id = "";
+                            this.user_name = "";
+                            this.type = "";
+                            this.time = "";
+                            this.isLogin = false;
+                            window.location.href = '/';
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            viewMoreHide(){
+                this.defaultText = false;
+            },
+
+            async mapDisplay() {
+                const hotel_id = document.getElementById('hotelID').innerHTML;
+                const result = await this.$http.get(`/api/map/${hotel_id}/`);
+
+                if (result.data.error === false) {
+                    this.lat = parseFloat(result.data.data.latitude);
+                    this.long = parseFloat(result.data.data.longitude);
+
+                    const myLatlng = { lat: this.lat, lng: this.long };
+                    const map = new google.maps.Map(document.getElementById("map"), {
+                        zoom: 17,
+                        center: myLatlng,
+                    });
+
+                    const marker = new google.maps.Marker({
+                        position: myLatlng,
+                        map,
+                        title: "Click to Zoom",
+                    });
+
+                    map.addListener("center_changed", () => {
+                        window.setTimeout(() => {
+                            map.panTo(marker.getPosition());
+                        }, 3000);
+                    });
+
+                    marker.addListener("click", () => {
+                        map.setZoom(20);
+                        map.setCenter(marker.getPosition());
+                    });
+
+                    this.showMap = true;
+                }
+            },
+        }
+        
+    });
+</script>
+<!-- vue js scripts end -->
+{% endblock %}

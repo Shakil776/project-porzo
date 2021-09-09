@@ -1,0 +1,160 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Hotel Facilites{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Hotel Facilities</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Hotel Facilities</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Hotel Facilities</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addHotelFacilites" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="facilitesId">Facilities<span class="text-danger">*</span></label>
+                                <select v-model="facilites_id" id="facilitesId" class="form-control">
+                                     <option v-for="facilit in Facilites" :value="facilit.facilites_id">${ facilit.facilites_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="facilitesPrice">Price<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" v-model="price" id="facilitesPrice" placeholder="Enter Facilites Price">
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            
+                                <div class="form-group col-md-6">
+                                <label for="facilitesOfferPrice">Offer Price (Optional)</label>
+                                <input type="number" class="form-control" v-model="offer_price" id="facilitesOfferPrice" placeholder="Enter Facilites Offer Price">
+                            </div>
+                        </div>
+
+
+                      <button type="submit" class="btn btn-primary mt-3">Add Hotel Facilities</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allHotelFacilites : [],
+                Facilites : [],
+                allHotels : [],
+                facilites_id : null,
+                price : null,
+                offer_price : null,
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                logged_user_id: {{ request.session.uid }}
+            },
+            mounted: function() {
+                this.getFacilites();
+                
+            },
+            methods: {
+                addHotelFacilites: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('facilites_id', this.facilites_id);
+                    form_data.append('price', this.price);
+                    if(this.offer_price){
+                        form_data.append('offer_price', this.offer_price);
+                    }
+                    form_data.append('hotel_owner_id', this.logged_user_id);
+                    form_data.append('price_type', 3);
+
+                    this.$http.post(`/admin-api/hotels-facilites/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.data.error == false) {
+                                // clear all form field after successfully insert data
+                                this.facilites_id = '';
+                                this.price = null;
+                                this.offer_price = null;
+
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Hotel Facilites Added Successfully.',
+                                    messageColor: 'black'
+                                });
+                            }
+                            else {
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Opppps!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong. Please try again.',
+                                    messageColor: 'black'
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getFacilites: function(){
+                    this.$http.get(`/api/facilites/`)
+                      .then((resp) => {
+                        this.Facilites = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

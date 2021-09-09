@@ -1,0 +1,164 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok | Profile{% endblock  %}
+
+{% block custom_css %}
+<style>
+.profile-image{
+    width: 50%;
+    height: auto;
+    border-radius: 50% !important;
+}
+</style>
+{% endblock  %}
+
+{% block main_content %}
+<!-- ========== MAIN CONTENT ========== -->
+<main id="profile" class="bg-gray space-1" v-cloak>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-xl-4">
+                <div class="shadow-soft bg-white rounded-sm">
+
+                    <div class="pt-5 pb-3 px-5 border-bottom text-center">
+                        <a v-if="userInfo.user_image" href="javascript:" class="d-block mb-3">
+                            <img class="img-fluid profile-image rounded-sm" :src="userInfo.user_image" :alt="userInfo.user_name">
+                        </a>
+                        <a v-else href="javascript:" class="d-block mb-3">
+                            <img class="img-fluid profile-image rounded-sm" src="{% static 'frontEnd/assets/img/icons/profile.png' %}" alt="Profile Photo">
+                        </a>
+                            
+                        <h5 class="text-dark font-weight-bold mb-2 d-block">${userInfo.user_name}</h5>
+                        <h6>${userInfo.user_phone}</h6>
+                    </div>
+
+                    <!-- Basics Accordion -->
+                    <div id="basicsAccordion" >
+                        <!-- Card -->
+                        <div class="card rounded-0 border-top-0 border-left-0 border-right-0">
+                            <div class="card-header card-collapse bg-transparent border-0" id="basicsHeadingOne">
+                                <h5 class="mb-0">
+                                    <button type="button" class="btn btn-link border-0 btn-block d-flex justify-content-between card-btn py-3 font-size-17 font-weight-bold text-dark"
+                                        data-toggle="collapse"
+                                        data-target="#basicsCollapseOne"
+                                        aria-expanded="true"
+                                        aria-controls="basicsCollapseOne">
+                                        Personal Information
+
+                                        <span class="card-btn-arrow font-size-14 text-dark">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </span>
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="basicsCollapseOne" class="collapse show"
+                                aria-labelledby="basicsHeadingOne"
+                                data-parent="#basicsAccordion">
+
+                                <div class="card-body px-4 pt-0" style="border-bottom: 1px solid #ddd">
+                                    <!-- Fact List -->
+                                    <ul class="list-unstyled font-size-1 mb-0 font-size-16">
+                                        
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Name:</span> 
+                                            <span class="text-secondary">${userInfo.user_name}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Email:</span> 
+                                            <span class="text-secondary">${userInfo.user_email}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Phone:</span> 
+                                            <span class="text-secondary">${userInfo.user_phone}</span>
+                                        </li>
+
+                                        <li v-if="userInfo.user_national_id_card" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">NID Number:</span> 
+                                            <span class="text-secondary">${userInfo.user_national_id_card}</span>
+                                        </li>
+                                        
+                                        <li v-if="userInfo.date_of_birth" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Date of Birth:</span>
+                                            <span class="text-secondary">${ dateTimeFormat(userInfo.date_of_birth, "fullDate") }</span>
+                                        </li>
+
+                                        <li v-if="userInfo.user_short_address" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Address:</span>
+                                            <span class="text-secondary text-right">${userInfo.user_short_address}</span>
+                                        </li>
+
+                                    </ul>
+                                    <!-- End Fact List -->
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- End Card -->
+                    </div>
+                    <!-- End Basics Accordion -->
+                </div>
+            </div>
+            <div class="col-lg-8 col-xl-8">
+
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+
+        <!-- ========== END MAIN CONTENT ========== -->
+{% block custom_js %}
+    <script src="{% static 'frontEnd/assets/js/customjs/vee-validate.min.js' %}"></script>
+    <!-- moment js for date time format -->
+    <script src="{% static 'frontEnd/assets/js/customjs/moment.min.js' %}"></script>
+
+    <script>
+        Vue.component('validation-observer', VeeValidate.ValidationObserver);
+        Vue.component('validation-provider', VeeValidate.ValidationProvider);
+    </script>
+    <script src="{% static 'frontEnd/assets/js/customjs/rules.umd.js' %}"></script>
+    <script>
+        Object.keys(VeeValidateRules).forEach(rule => {
+          VeeValidate.extend(rule, VeeValidateRules[rule]);
+        });
+    </script>
+
+    <script type="text/javascript">
+        Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+    </script>
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#profile',
+            delimiters: ['${','}'],
+            data: {
+                session_id: "{{ request.session.session_id }}",
+                user_id: "{{ request.session.user_id }}",
+                userInfo: {},
+            },
+            mounted: function() {
+                this.getUserInfo();
+            },
+            methods: {
+                async getUserInfo(){
+                    const user = await this.$http.get(`/api/user/${this.user_id}/`);
+                    this.userInfo = user.data.data;
+                },
+                dateTimeFormat(date, dateType) {
+                    const date1 = new Date(date);
+                    if (dateType === "fullDate") {
+                        return moment(date1).format("MMMM D, YYYY");
+                    }
+                },
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->    
+
+{% endblock %}

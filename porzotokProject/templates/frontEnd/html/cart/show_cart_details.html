@@ -1,0 +1,194 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok | Cart{% endblock  %}
+
+{% block custom_css %}
+<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'frontEnd/assets/css/cart_css/color1.css' %}">
+<link rel="stylesheet" href="{% static 'frontEnd/assets/css/cart_css/themify-icons.css' %}">
+<style>
+    .empty-cart {
+        font-size: 30px;
+        font-weight: bold;
+        color: red;
+        text-align: center;
+    }
+    .btn-solid-cart {
+        padding: 13px 29px;
+        color: #ffffff;
+        letter-spacing: 0.05em;
+        border: 2px solid #C20035;
+        background-color: #C20035 !important;
+        transition: background 300ms ease-in-out;
+    }
+    .btn-solid-cart:hover {
+        background-position: 100%;
+        color: #000000;
+        background-color: #C20035;
+    }
+</style>
+{% endblock %}
+
+{% block main_content %}
+<!-- breadcrumb start -->
+<div class="breadcrumb-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="page-title">
+                    <h2>cart</h2>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <nav aria-label="breadcrumb" class="theme-breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'webapp:home' %}">Home</a></li>
+                        <li class="breadcrumb-item active">cart</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- breadcrumb End -->
+
+<!--section start-->
+<section class="cart-section section-b-space" id="show_cart" v-cloak>
+    <div class="container" v-if="userCartDetails.cart_room_data && userCartDetails.cart_room_data.length > 0">
+        <div class="row">
+            <div class="col-sm-12">
+                <table class="table cart-table table-responsive-xs">
+                    <thead>
+                        <tr class="table-head">
+                            <th scope="col">image</th>
+                            <th scope="col">Service Name</th>
+                            <th scope="col">price</th>
+                            <th scope="col">quantity</th>
+                            <th scope="col">action</th>
+                            <th scope="col">total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="userRoomCart in userCartDetails['cart_room_data']">
+                            <td>
+                                <a href="javascript:"><img style="width: 120px;" :src="userRoomCart.room_details.image_url[0].Image" :alt="userRoomCart.room_details.room_name"></a>
+                            </td>
+                            <td><a href="#">${userRoomCart.room_details.room_name}</a></td>
+                            <td>
+                                <h2>${userRoomCart.room_details.price_details.offer_price} TK</h2>
+                            </td>
+                            <td>
+                                <div class="qty-box">
+                                    <span v-if="userRoomCart.room_details.room_id">1</span>
+                                    <div v-else class="input-group">
+                                        <input type="number" name="quantity" class="form-control input-number" value="1">
+                                    </div>
+                                </div>
+                            </td>
+                            <td><a href="javascript:" @click="deleteCartRoom(userRoomCart.room_cart_details_id)" class="icon"><i class="ti-close"></i></a></td>
+                            <td>
+                                <h2 class="td-color">${ userRoomCart.room_details.price_details.offer_price } TK</h2>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">total price :</td>
+                            <td colspan="2">
+                                <h2 v-if="userCartDetails.cart_room_data && userCartDetails.cart_room_data.length > 0">${totalPrice} TK</h2>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+            </div>
+        </div>
+        <div class="row cart-buttons">
+            <div class="col-6"></div>
+            <div class="col-6"><a href="{% url 'webapp:checkout' %}" class="btn btn-solid-cart">checkout</a></div>
+        </div>
+    </div>
+    <div v-else class="empty-cart">Your cart is empty.</div>
+</section>
+<!--section end-->
+{% endblock %}
+
+
+{% block custom_js %}
+<script src="{% static 'frontEnd/assets/js/cart_js/bootstrap.js' %}"></script>
+<!-- vue js scripts start -->
+<script type="text/javascript">
+
+    new Vue({
+        el: '#show_cart',
+        delimiters: ['${','}'],
+        data: {
+            userCartDetails: [],
+            session_id: "{{ request.session.session_id }}",
+            user_id: "{{ request.session.user_id }}",
+        },
+        mounted: function() {
+            this.getUserCartDetails();
+        },
+        computed: {
+            totalPrice: function(){
+                var sum = 0;
+                this.userCartDetails.cart_room_data.forEach(item => {
+                    sum += parseInt(item.room_details.price_details.offer_price);
+                });
+                return sum;
+            }
+        },
+        methods: {
+
+            getUserCartDetails: function(){
+
+                if (this.user_id != 0) {
+                    this.$http.get(`/api/user-cart-details/?u_id=${this.user_id}`)
+                    .then((resp) => {
+                        this.userCartDetails = resp.data.data;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                } else {
+                    this.$http.get(`/api/user-cart-details/?session_id=${this.session_id}`)
+                    .then((resp) => {
+                        this.userCartDetails = resp.data.data;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }
+
+            },
+            deleteCartRoom: function(room_cart_id){
+
+                if (this.user_id != 0) {
+                    this.$http.delete(`/api/user-cart-details/${room_cart_id}/?user_id=${this.user_id}`)
+                    .then((resp) => {
+                        this.getUserCartDetails();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }else{
+                    this.$http.delete(`/api/user-cart-details/${room_cart_id}/?session_id=${this.session_id}`)
+                    .then((resp) => {
+                        this.getUserCartDetails();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }
+                
+            }
+        },
+        
+    });
+
+</script>
+<!-- vue js scripts end -->
+{% endblock %}

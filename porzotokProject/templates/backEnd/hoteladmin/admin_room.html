@@ -1,0 +1,276 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Add Room{% endblock  %}
+
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Room</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Rooms</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Room</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addRoom" id="addRoomForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="roomName">Room Name<span class="text-danger h6">*</span></label>
+                                <input type="text" class="form-control" v-model="room_name" id="roomName" placeholder="Enter Room Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="roomNumber">Room Number<span class="text-danger h6">*</span></label>
+                                <input type="text" class="form-control" v-model="room_no" id="roomNumber" placeholder="Enter Room Number">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="floorNo">Floor<span class="text-danger h6">*</span></label>
+                                <select v-model="floor_id" id="floorNo" class="form-control">
+                                     <option v-for="floor in allFloors" :value="floor.floor_id">${ floor.floor_no }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="roomStatus">Room Status<span class="text-danger h6">*</span></label>
+                                <select v-model="room_status" id="roomStatus" class="form-control">
+                                    <option value="1">Book</option>
+                                    <option value="2">Available</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="roomPrice">Price<span class="text-danger h6">*</span></label>
+                                <input type="number" class="form-control" v-model="price" id="roomPrice" placeholder="Enter Room Price">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="roomOfferPrice">Offer Price <span>(Optional)</span></label>
+                                <input type="number" class="form-control" v-model="offer_price" id="roomOfferPrice" placeholder="Enter Room Price">
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+
+                            <div class="form-group col-md-6">
+                                <label for="roomImage">Room Image<span class="text-danger h6">*</span></label><br>
+                                <input @change="onFileChange" type="file" name="image" id="roomImage" multiple />
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="roomDescription">Room Description<span class="text-danger h6">*</span></label>
+                                <textarea class="form-control" id="roomDescription" placeholder="Enter Room Description" rows="6" v-model="room_description"></textarea>
+                            </div>
+                        </div>
+
+                      <button type="submit" class="btn btn-primary mt-3">Add Room</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+
+    </div>
+
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allRooms : [],
+                allFloors : [],
+                allHotelDiscounts: [],
+                // allHotels : [],
+                room_name : null,
+                room_no : null,
+                price : null,
+                offer_price : null,
+                // price_entry_date : null,
+                offer_price : null,
+                price_type : null,
+                // hotel_id : null,
+                floor_id : null,
+                room_status : null,
+                room_description : null,
+                image : '',
+                // hotel_discount_id : null,
+                is_active : null,
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                logged_user_id: {{ request.session.uid }}
+            },
+            mounted: function() {
+                this.getAllRooms();
+                this.getAllFloors();
+                // this.getAllHotels();
+                this.getAllHotelDiscounts();
+            },
+            methods: {
+                addRoom: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('room_name', this.room_name);
+                    form_data.append('room_no', this.room_no);
+                    // form_data.append('hotel_id', this.hotel_id);
+                    form_data.append('floor_id', this.floor_id);
+                    form_data.append('price', this.price);
+                    if(this.offer_price){
+                        form_data.append('offer_price', this.offer_price);
+                    }
+                    // form_data.append('price_entry_date', this.price_entry_date);
+                    form_data.append('price_type', 1);
+                    form_data.append('room_status', this.room_status);
+                    form_data.append('hotel_owner_id', this.logged_user_id);
+                    // if(this.hotel_discount_id != null){
+                    //     form_data.append('hotel_discount_id', this.hotel_discount_id);
+                    // }
+                    form_data.append('room_description', this.room_description);
+
+                    for( var i = 0; i < this.image.length; i++ ){
+                      let file = this.image[i];
+                      form_data.append('image', file);
+                    }
+
+                    this.$http.post(`/admin-api/add-room-hotel-admin/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.data.error == false) {
+                                
+                                // clear all form field after successfully insert data
+                                this.room_name = '';
+                                this.room_no = '';
+                                // this.hotel_id = '';
+                                this.floor_id = '';
+                                this.price = '';
+                                this.offer_price = '';
+                                // this.price_entry_date = '';
+                                this.room_status = '';
+                                // this.hotel_discount_id = '';
+                                this.room_description = '';
+                                this.image = '';
+                                
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'green',
+                                    message: 'Room Added Successfully.',
+                                    messageColor: 'black'
+                                });
+                            }
+                            else {
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Opppps!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong. Please try again.',
+                                    messageColor: 'black'
+                                });
+
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            //Show Toast Message
+                                iziToast.show({
+                                    title: 'Opppps!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong. Please try again.',
+                                    messageColor: 'black'
+                                });
+                        })
+                },
+                
+                getAllRooms: function() {
+                    this.$http.get(`/admin-api/add-room-hotel-admin/?user_id=${this.logged_user_id}`)
+                        .then((resp) => {
+                            this.allRooms = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                onFileChange(event) {
+                    this.image = event.target.files;
+                },
+
+                getAllFloors: function(){
+                    this.$http.get(`/api/floor/`)
+                      .then((resp) => {
+                        this.allFloors = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getAllHotelDiscounts: function(){
+                    this.$http.get(`/admin-api/discount-hotel/?user_id=${this.logged_user_id}`)
+                      .then((resp) => {
+                        this.allHotelDiscounts = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

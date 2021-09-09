@@ -1,0 +1,326 @@
+{% extends 'backEnd/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Offer{% endblock  %}
+
+{% block custom_css %}
+    <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Offers</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Offer</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Offer</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addOffer" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="offerName">Offer Name</label>
+                                <input type="text" class="form-control" v-model="offer_name" id="offerName" placeholder="Enter Offer Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="offerTypeId">Offer Type</label>
+                                <select v-model="offer_type_id" id="offerTypeId" class="form-control">
+                                     <option v-for="offerType in allOfferTypes" :value="offerType.offer_type_id">${ offerType.offer_type_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="offerAmount">Offer Amount</label>
+                                <input type="number" class="form-control" v-model="offer_amount" id="offerAmount" placeholder="Enter Offer Amount">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="offerMaxAmount">Offer Maximum Amount</label>
+                                <select v-model="offer_max_amount_id" id="offerMaxAmount" class="form-control">
+                                     <option v-for="offerMaxAmount in allOfferMaxAmount" :value="offerMaxAmount.offer_max_amount_id">TK. ${ offerMaxAmount.min_amount } -- TK. ${ offerMaxAmount.max_amount }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="offerStartTime">Offer Start Time</label>
+                                <input type="date" class="form-control" v-model="start_time_date" id="offerStartTime">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="offerEndTime">Offer End Time</label>
+                                <input type="date" class="form-control" v-model="end_time_date" id="offerEndTime">
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="offerReason">Offer Reason</label>
+                                <textarea class="form-control" id="offerReason" placeholder="Enter Offer Reason" rows="6" v-model="offer_reason"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="offferImage">Offer Image</label>
+                                <input @change="onFileChange" type="file" class="form-control" name="image" id="offferImage" />
+                            </div>
+                        </div>
+
+                        <div class="n-chk">
+                            <label>
+                              <input v-model="is_active" type="checkbox" id="isActive" class="new-control-input" checked>
+                              <span>Is Active</span>
+                            </label>
+                        </div>
+                        
+                      <button type="submit" class="btn btn-primary mt-3">Add Offer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Offer List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="table-responsive mb-4 mt-4">
+                    <table id="dataTableContent" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Maximum Amount</th>
+                                <th>Minimum Amount</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-for="offer in allOffers" :key="offer.offer_id">
+                                <td>${ offer.offer_id }</td>
+                                <td>${ offer.offer_name }</td>
+                                <td>${ offer.offer_type.offer_type_name }</td>
+                                <td>TK. ${ offer.offer_amount }</td>
+                                <td>TK. ${ offer.offer_max_amount.max_amount }</td>
+                                <td>TK. ${ offer.offer_max_amount.min_amount }</td>
+                                <td>${ offer.start_time_date }</td>
+                                <td>${ offer.end_time_date }</td>
+                                <td>${ offer.offer_reason }</td>
+                                <td>${ offer.is_active }</td>
+
+                                <td class="text-center">
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>
+    <div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;">
+        <p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">${msg}</p>
+        <button class="action" style="color: rgb(37, 213, 228);">Dismiss</button>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allOffers : [],
+                allOfferTypes : [],
+                allOfferMaxAmount : [],
+                offer_name : null,
+                offer_type_id : null,
+                offer_amount : null,
+                offer_max_amount_id : null,
+                offer_reason : null,
+                start_time_date : null,
+                end_time_date : null,
+                image : '',
+                is_active : null,
+                msg : '',
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+            },
+            mounted: function() {
+                this.getAllOffers();
+                this.getAllOfferTypes();
+                this.getAllMaxOfferAmount();
+            },
+            methods: {
+                addOffer: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('offer_name', this.offer_name);
+                    form_data.append('offer_type_id', this.offer_type_id);
+                    form_data.append('offer_amount', this.offer_amount);
+                    form_data.append('offer_max_amount_id', this.offer_max_amount_id);
+                    form_data.append('offer_reason', this.offer_reason);
+                    form_data.append('start_time_date', this.start_time_date);
+                    form_data.append('end_time_date', this.end_time_date);
+                    form_data.append('is_active', this.is_active);
+                    form_data.append('offer_image', this.image);
+                    
+
+                    this.$http.post(`/api/offer/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                // get all offers
+                                this.getAllOffers();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getAllOffers: function() {
+                    this.$http.get(`/api/offer/`)
+                        .then((resp) => {
+                            this.allOffers = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                onFileChange(event) {
+                    this.image = event.target.files[0];
+                },
+
+                getAllOfferTypes: function(){
+                    this.$http.get(`/api/offer-type/`)
+                      .then((resp) => {
+                        this.allOfferTypes = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getAllMaxOfferAmount: function(){
+                    this.$http.get(`/api/offer-max-amount/`)
+                      .then((resp) => {
+                        this.allOfferMaxAmount = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok | Spots{% endblock  %}
+
+{% block custom_css %}
+<style>
+.section-title::after, .tab-nav-pill .nav-link.active {
+    background-color: #C20035 !important;
+}  
+.card-title.text-dark:hover {
+    color: #C20035 !important;
+} 
+</style>
+{% endblock  %}
+
+
+{% block main_content %}
+<!-- ========== MAIN CONTENT ========== -->
+<main id="content">
+    <!-- ========== HERO ========== -->
+    <div class="hero-block hero-v1 bg-img-hero-bottom gradient-overlay-half-black-gradient text-center z-index-2" style="background-image: url({% static 'frontEnd/assets/img/1920x750/img3.png' %});">
+        <div class="container space-2 space-top-xl-9">
+            <div class="text-center pb-xl-8">
+                <!-- Info -->
+                <div class="pt-xl-6">
+                    <h1 class="font-size-60 font-size-xs-30 text-white font-weight-bold">{{spot_by_city.0.city}}</h1>
+                    {% if spot_by_city.0.tag_line != null %}
+                        <p class="font-size-20 font-weight-normal text-white">{{spot_by_city.0.tag_line}}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- End Info -->
+            </div>
+
+        </div>
+    </div>
+    <!-- ========== END HERO ========== -->
+
+    <!-- Destinantion  -->
+    <div class="border-bottom border-color-8">
+            <div class="container space-bottom-1 space-top-lg-3">
+                <div class="w-md-80 w-lg-50 text-center mx-md-auto mb-4 mb-xl-7 pb-xl-1">
+                    <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Welcome to {{spot_by_city.0.city}}</h2>
+                </div>
+                <div class="w-lg-80 w-xl-60 mx-auto collapse_custom position-relative mb-4 pb-xl-1">
+
+                    <p>
+                        <span v-show="defaultText">{{ spot_by_city.0.description|truncatewords:30 }}</span>
+                        <span class="collapse" id="collapseLinkExample">{{ spot_by_city.0.description }}</span>
+                    </p>
+
+
+                     <a class="link-collapse link-collapse-custom gradient-overlay-half mb-5 d-inline-block border-bottom border-blackk" data-toggle="collapse" href="#collapseLinkExample" role="button" aria-expanded="false" aria-controls="collapseLinkExample">
+                        <span class="link-collapse__default font-size-14" @click="viewMoreHide">View More <i class="flaticon-down-chevron font-size-10 ml-1"></i></span>
+                    </a>
+
+                </div>
+            </div>
+    </div>
+    <!-- End Destinantion -->
+
+    <!-- Tabs v1 -->
+    <div class="tabs-block tab-v1">
+        <div class="container space-lg-1">
+            <div class="w-md-80 w-lg-50 text-center mx-md-auto my-3">
+                <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Top Experiences in {{spot_by_city.0.city}}</h2>
+            </div>
+            <!-- Nav Classic -->
+            <ul class="nav tab-nav-pill flex-nowrap pb-4 pb-lg-5 tab-nav justify-content-lg-center" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link font-weight-medium active" id="hotel-tab" data-toggle="pill" href="#hotel" role="tab" aria-controls="hotel" aria-selected="true">
+                        <div class="d-flex flex-column flex-md-row  position-relative text-dark align-items-center">
+                            <span class="tabtext font-weight-semi-bold">Hotels</span>
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link font-weight-medium" id="spot-tab" data-toggle="pill" href="#spot" role="tab" aria-controls="spot" aria-selected="true">
+                        <div class="d-flex flex-column flex-md-row  position-relative text-dark align-items-center">
+                            <span class="tabtext font-weight-semi-bold">Spots</span>
+                        </div>
+                    </a>
+                </li>
+
+            </ul>
+            <!-- End Nav Classic -->
+            <div class="tab-content">
+                <div class="tab-pane fade active show" id="hotel" role="tabpanel" aria-labelledby="hotel-tab">
+                    <div class="row">
+                        {% for city in city_by_hotels %}
+                        <div class="col-md-6 col-lg-4 col-xl-3 mb-3 mb-md-4 pb-1">
+                            <div class="card mb-1 transition-3d-hover shadow-hover-2 tab-card h-100">
+                                <div class="position-relative mb-2">
+                                    <a href="/hotel/{{ city.slug }}" class="d-block gradient-overlay-half-bg-gradient-v5">
+                                        <img class="min-height-230 bg-img-hero card-img-top" src="{{ city.image }}" alt="img">
+                                    </a>
+                                    <div class="position-absolute top-0 left-0 pt-5 pl-3">
+                                        <span class="badge badge-pill bg-white text-primary px-4 py-2 font-size-14 font-weight-normal">{{city.hotel_name}}</span>
+                                        <!-- <span class="badge badge-pill bg-white text-danger px-3 ml-3 py-2 font-size-14 font-weight-normal">%25</span> -->
+                                    </div>
+                                    <div class="position-absolute top-0 right-0 pt-5 pr-3">
+                                      <button type="button" class="btn btn-sm btn-icon text-white rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                                        <span class="flaticon-valentine-heart"></span>
+                                      </button>
+                                    </div>
+                                </div>
+                                <div class="card-body px-4 py-2">
+                                    <a href="/destination/{{city.city_slug}}" class="d-block">
+                                        <div class="mb-1 d-flex align-items-center font-size-14 text-gray-1">
+                                            <i class="icon flaticon-pin-1 mr-2 font-size-15"></i>{{city.city}}, {{city.state}}, {{city.country}}
+                                        </div>
+                                    </a>
+                                    <a href="/hotel/{{ city.slug }}" class="card-title font-size-17 font-weight-bold mb-0 text-dark">{{city.hotel_name}}</a>
+                                    <div class="my-2">
+
+                                        <div class="d-inline-flex align-items-center font-size-17 text-lh-1 text-primary">
+                                            <div class="green-lighter mr-2">
+                                                {% with rating=city.hotel_id.hotel_id|average_rating_count %} 
+                                                    {% for i in 1|range:6 %}
+                                                        {% if i <= rating %}
+                                                            <small class="fas fa-star ac-color"></small>
+                                                        {% else %}
+                                                            <small class="fas fa-star"></small>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endwith %}
+                                            </div>
+                                            <span class="text-secondary font-size-14 mt-1">{{city.hotel_id.hotel_id|total_review_count}} Reviews</span>
+                                        </div>
+
+                                        <div class="mt-2">
+                                            <span class="mr-1 font-size-14 text-gray-1">From</span>
+                                            <span class="font-weight-bold">TK. {{city.hotel_id|hotel_min_price }}</span>
+                                            <span class="font-size-14 text-gray-1"> / night</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="spot" role="tabpanel" aria-labelledby="spot-tab">
+                    <div class="row">
+                        {% for spot in spot_by_city %}
+                        <div class="col-md-6 col-lg-4 col-xl-3 mb-3 mb-md-4 pb-1">
+                            <div class="card mb-1 transition-3d-hover shadow-hover-2 tab-card h-100">
+                                <div class="position-relative mb-2">
+                                    <a href="/spot-info/{{spot.slug}}" class="d-block gradient-overlay-half-bg-gradient-v5">
+                                        <img class="min-height-230 bg-img-hero card-img-top" src="{{ spot.image }}" alt="{{spot.tourist_spot_name}}">
+                                    </a>
+                                    <!-- <div class="position-absolute top-0 left-0 pt-5 pl-3">
+                                        <span class="badge badge-pill bg-white text-danger px-3 ml-3 py-2 font-size-14 font-weight-normal">%25</span> offer
+                                    </div>
+                                    <div class="position-absolute top-0 right-0 pt-5 pr-3">
+                                      <button type="button" class="btn btn-sm btn-icon text-white rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                                        <span class="flaticon-valentine-heart"></span>
+                                      </button>
+                                    </div> -->
+                                </div>
+                                <div class="card-body px-4 py-2">
+                                    <a href="/city-info/{{spot.city_slug}}" class="d-block">
+                                        <div class="mb-1 d-flex align-items-center font-size-14 text-gray-1">
+                                            <i class="icon flaticon-pin-1 mr-2 font-size-15"></i> {{spot.city}}, {{spot.state}}, {{spot.country}}
+                                        </div>
+                                    </a>
+                                    <a href="/spot-info/{{spot.slug}}" class="card-title text-dark font-size-17 font-weight-bold">{{spot.tourist_spot_name}}</a>
+                                    <!-- <div class="my-2">
+                                        <div class="d-inline-flex align-items-center font-size-17 text-lh-1">
+                                            <div class="green-lighter mr-2">
+                                                <small class="fas fa-star"></small>
+                                                <small class="fas fa-star"></small>
+                                                <small class="fas fa-star"></small>
+                                                <small class="fas fa-star"></small>
+                                                <small class="fas fa-star"></small>
+                                            </div>
+                                            <span class="text-secondary font-size-14 mt-1">48 Reviews</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-1 d-flex align-items-center font-size-14 text-gray-1">
+                                        <i class="icon flaticon-clock-circular-outline mr-2 font-size-14"></i> 3 hours 45 minutes 
+                                    </div> -->
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Tabs v1 -->
+
+</main>
+<!-- ========== END MAIN CONTENT ========== -->
+{% endblock %}
+{% block custom_js %}
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue.js' %}"></script>
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue-resources.js' %}"></script>
+
+<!-- vue js scripts start -->
+<script type="text/javascript">
+
+    new Vue({
+        el: '#content',
+        delimiters: ['${','}'],
+        data: { 
+            defaultText: true,  
+        },
+        methods: {
+            viewMoreHide(){
+                this.defaultText = false;
+            },
+        }
+        
+    });
+</script>
+<!-- vue js scripts end -->
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Room Facilities List{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Room Facilities List</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Room Facilities List</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Room Facilities List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="row">
+                    <div class="col-sm-4">
+                        Show
+                        <select v-model="perPage" @change="handlePageSizeChange($event)">
+                            <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                        </select>
+                        entries
+                    </div>
+                
+                    <div class="col-sm-4 offset-sm-4">
+                      <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search" v-model="searchKey"  @keyup="getSearchData" />
+                      </div>
+                    </div>
+                </div>
+                
+
+                <div class="table-responsive mb-4 mt-4">
+
+                    <table class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Facilites Name</th>
+                                <!-- <th>Hotel Name</th> -->
+                                <th>Room Name</th>
+                                <th>Room No.</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-if="allFacilitesGroup.length" v-for="(r_fac, index) in allFacilitesGroup" :key="r_fac.facilites_group_id">
+                                <td>${ (currentPage - 1) * perPage + index + 1 }</td>
+                                <td>${ r_fac.facilites_details.facilites_name }</td>
+                               <!--  <td>${ r_fac.room_details.hotel_details.hotel_name }</td> -->
+                                <td>${ r_fac.room_details.room_name }</td>
+                                <td>${ r_fac.room_details.room_no }</td>
+
+
+                                <td class="text-center">
+                                    <a @click.prevent="deleteRoomFacilites(r_fac.facilites_group_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            <tr v-show="!allFacilitesGroup.length" class="text-center"><td colspan="8">No Data</td></tr>
+
+                        </tbody>
+                        
+                    </table>
+
+                     <div v-if="allFacilitesGroup.length">
+                        <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last">
+                        </b-pagination>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+        <!-- table end -->
+
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allFacilitesGroup : [],
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                hide_or_vis : "none",
+                logged_user_id: {{ request.session.uid }},
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+                searchKey: null,
+            },
+            mounted: function() {
+                this.getAllFacilitesGroups();
+            },
+
+            methods: {
+                async getAllFacilitesGroups() {
+                    await this.$http.get(`/admin-api/list_room-facilites/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allFacilitesGroup = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllFacilitesGroups();
+                },
+                async getSearchData() {
+                    if (this.searchKey != null && this.logged_user_id != null) {
+                        const result = await this.$http.get(`/admin-api/hotel-room-facilities-search/?user_id=${this.logged_user_id}&key=${this.searchKey}`);
+                        if (result.data.error === false) {
+                            this.allFacilitesGroup = result.data.data;
+                            this.totalItems = result.data.count;
+                        }
+                    } 
+                },
+                deleteRoomFacilites: function(fid){
+                    swal({
+                      title: 'Are you sure?',
+                      text: "You won't be able to revert this!",
+                      type: 'warning',
+                      showCancelButton: true,
+                      confirmButtonText: 'Delete',
+                      padding: '2em'
+                    }).then((result) => {
+                      if (result.value){
+
+                        this.$http.delete(`/admin-api/room-facilites/${fid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Room Facilites Deleted Successfully',
+                                    messageColor: 'black'
+                                });
+                                this.getAllHotelFacilites();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+
+                      }
+                    });
+                },
+
+            },
+            watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllFacilitesGroups();
+                  }
+                }
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

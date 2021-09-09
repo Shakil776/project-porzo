@@ -1,0 +1,348 @@
+{% extends 'backEnd/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Tourist Spot{% endblock  %}
+
+{% block custom_css %}
+
+  <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Tourist Spot</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Tourist Spot</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Tourist Spot</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addSpot" id="addSpotForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="touristspotName">Tourist Spot Name</label>
+                                <input type="text" class="form-control" v-model="tourist_spot_name" id="touristspotName" placeholder="Enter Tourist Spot Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="touristspotMap">Tourist Spot Map</label>
+                                <input type="text" class="form-control" v-model="map_address" id="touristspotMap" placeholder="Enter Tourist Spot Map">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="touristslugName">Enter Tourist Spot Slug Name</label>
+                                <input type="text" class="form-control" v-model="slug_name" id="touristslugName" placeholder="Enter Tourist Spot Slug Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="touristspotTagline">Tourist Spot Tag line</label>
+                                <input type="text" class="form-control" v-model="tag_line" id="touristspotTagline" placeholder="Enter Tourist Spot Tag line">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="touristspotDescription">Tourist Spot Description</label>
+                                <textarea class="form-control" id="touristspotDescription" placeholder="Enter Tourist Spot Description" rows="6" v-model="description"></textarea>
+                            </div>
+                        </div>
+
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="touristspotImage">Tourist Spot Image</label>
+                                <input @change="onFileChange" type="file" class="form-control" name="image" id="touristspotImage" multiple />
+                            </div>
+                            <div class="form-group col-md-12">
+                                <label for="touristspotALocation">Tourist Spot location</label>
+                                <textarea class="form-control" id="touristspotALocation" placeholder="Enter Tourist Spot location" rows="6" v-model="location"></textarea>
+                            </div>                           
+                        </div>
+
+                       
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputCountry">Country</label>
+                                <select v-model="country_id" name="country" id="inputCountry" class="form-control" @change="getStateByCountry()">
+                                     <option v-for="country in allCountries" :value="country.country_id">${ country.country_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputState">State</label>
+                                <select v-model="state_id" name="state" id="inputState" class="form-control" @change="getCityByState()">
+                                    <option v-for="state in allStateList" :value="state.state_id">${ state.state_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">City</label>
+                                <select v-model="city_id" id="inputCity" name="city_id" class="form-control">
+                                    <option v-for="city in allCityList" :value="city.city_id">${ city.city_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        
+                      <button type="submit" class="btn btn-primary mt-3">Add Tourist Spot</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Tourist Spot List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="table-responsive mb-4 mt-4">
+                    <table id="dataTableContent" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tourist Spot Name</th>
+                                <th>Description</th>
+                                <th>Map_address</th>
+                                <th>Start Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-for="spot in allSpots" :key="spot.tourist_spot_id">
+                                <td>${ spot.tourist_spot_id }</td>
+                                <td>${ spot.tourist_spot_name }</td>
+                                <td>${ spot.description }</td>
+                                <td>${ spot.map_address }</td>
+                                <td class="date_sp">${ spot.created_at }</td>
+
+                                <td class="text-center">
+                                    <a @click.prevent="editHotel(hotel.hotel_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a @click.prevent="deleteHotel(hotel.hotel_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>
+    <div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;">
+        <p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">${msg}</p>
+        <button class="action" style="color: rgb(37, 213, 228);">Dismiss</button>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allSpots: [],
+                tourist_spot_name : null,
+                slug_name : null,
+                tag_line : null,
+                description : null,
+                location : null,
+                map_address : null,
+                country_id : null,
+                state_id : null,
+                city_id : null,
+                image : '',
+                // user_type_id: '',
+                msg : '',
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool: false,
+                allCountries: [],
+                allStateList: [],
+                allCityList: [],
+            },
+            mounted: function() {
+                this.getAllSpots();
+                this.getAllCountries();
+            },
+            methods: {
+                addSpot: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('tourist_spot_name', this.tourist_spot_name);
+                    form_data.append('slug_name', this.slug_name);
+                    form_data.append('tag_line', this.tag_line);
+                    form_data.append('description', this.description);
+                    form_data.append('location', this.location);
+                    form_data.append('map_address', this.map_address);
+                    form_data.append('country_id', this.country_id);
+                    form_data.append('state_id', this.state_id);
+                    form_data.append('city_id', this.city_id);
+
+                    for( var i = 0; i < this.image.length; i++ ){
+                      let file = this.image[i];
+                      form_data.append('image', file);
+                    }
+
+                    this.$http.post(`/api/tourist-spot/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.error = true
+                                this.msg = resp.data.message;
+
+                                // clear all form field after successfully insert data
+                                this.tourist_spot_name = '';
+                                this.slug_name = '';
+                                this.tag_line = '';
+                                this.description = '';
+                                this.location = '';
+                                this.map_address = '';
+                                this.country_id = '';
+                                this.state_id = '';
+                                this.city_id = '';
+
+                                
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                // get all hotels
+                                this.getAllSpots();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getAllSpots: function() {
+                    this.$http.get(`/api/tourist-spot/`)
+                        .then((resp) => {
+                            this.allSpots = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                getAllCountries: function() {
+                    this.$http.get(`/api/country/`)
+                        .then((resp) => {
+                            this.allCountries = resp.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                getStateByCountry: function(event){
+                    this.$http.get(`/api/state_by_country/${this.country_id}`)
+                      .then((resp) => {
+                        this.allStateList = resp.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+                getCityByState: function(event){
+                    this.$http.get(`/api/city_by_state/${this.state_id}`)
+                      .then((resp) => {
+                        this.allCityList = resp.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+                onFileChange(event) {
+                    this.image = event.target.files;
+                },
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

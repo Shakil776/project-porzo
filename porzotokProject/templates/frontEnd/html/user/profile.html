@@ -1,0 +1,820 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok | Profile{% endblock  %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/b4vtabs.css' %}">
+<link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/profile.css' %}">
+{% endblock  %}
+
+{% block main_content %}
+<!-- ========== MAIN CONTENT ========== -->
+<main id="profile" class="space-1" v-cloak>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <ul class="nav nav-tabs left-tabs">
+                    <li class="nav-item">
+                      <a class="nav-link black-color active" href="#profile-info-tab" data-toggle="tab">Personal Information</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link black-color" href="#booking-tab" data-toggle="tab">Booking Details</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link black-color" href="#profile-update-tab" data-toggle="tab">Update Profile</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link black-color" href="#password-tab" data-toggle="tab">Change Password</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-md-9">
+                <div class="container">
+                    <div class="tab-content">
+
+                        <div class="tab-pane active" id="profile-info-tab">
+                            
+                            <!-- Card -->
+                            <div class="card">
+
+                                <div class="card-header">
+
+                                    <div class="avatar-upload mb-3">
+                                        <img v-if="preview" class="img-fluid profile-image rounded-sm" :src="preview" alt="" id="imagePreview">
+                                        <img v-else-if="userInfo.user_image" class="img-fluid profile-image rounded-sm" :src="userInfo.user_image" alt="" id="imagePreview">
+                                        <img v-else class="img-fluid profile-image rounded-sm" src="{% static 'frontEnd/assets/img/icons/profile.png' %}" alt="" id="imagePreview">
+
+                                        <div class="avatar-edit">
+                                            <input @change="previewImage" type='file' name="imageUpload" id="imageUpload" accept=".png, .jpg, .jpeg"/>
+                                            <label for="imageUpload"></label>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <h5 class="text-dark font-weight-bold mb-2 d-block">${userInfo.user_name}</h5>
+                                        <h6>${userInfo.user_phone}</h6>
+                                    </div>
+                                        
+                                </div>
+                                
+                                <div class="card-body px-4 pt-0">
+                                    <ul class="list-unstyled font-size-1 mb-0 font-size-16">
+                    
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Name:</span> 
+                                            <span class="text-secondary">${userInfo.user_name}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Email:</span> 
+                                            <span class="text-secondary">${userInfo.user_email}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Phone:</span> 
+                                            <span class="text-secondary">${userInfo.user_phone}</span>
+                                        </li>
+
+                                        <li v-if="userInfo.user_national_id_card" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">NID Number:</span> 
+                                            <span class="text-secondary">${userInfo.user_national_id_card}</span>
+                                        </li>
+                                        
+                                        <li v-if="userInfo.date_of_birth" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Date of Birth:</span>
+                                            <span class="text-secondary">${ dateTimeFormat(userInfo.date_of_birth, "fullDate") }</span>
+                                        </li>
+
+                                        <li v-if="userInfo.gender" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Gender:</span>
+                                            <span v-if="userInfo.gender == 1" class="text-secondary text-right">Male</span>
+                                            <span v-else-if="userInfo.gender == 2" class="text-secondary text-right">Female</span>
+                                            <span v-else class="text-secondary text-right">Other</span>
+                                        </li>
+
+                                        <li v-if="userInfo.city_id" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">State/City:</span>
+                                            <span class="text-secondary text-right">${userInfo.city.state.state_name}/${userInfo.city.city_name}</span>
+                                        </li>
+
+                                        <li v-if="userInfo.city_id" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Country:</span>
+                                            <span class="text-secondary text-right">${userInfo.city.state.country.country_name}</span>
+                                        </li>
+
+                                        <li v-if="userInfo.user_short_address" class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Address:</span>
+                                            <span class="text-secondary text-right">${userInfo.user_short_address}</span>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- End Card -->
+                        </div>
+
+                        <div class="tab-pane" id="profile-update-tab">
+                            
+                            <!-- Card -->
+                            <div class="card">
+
+                                <div class="card-header text-center">
+                                    <h3 class="text-dark font-weight-bold mb-2 d-block">Update Profile Information</h3>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="">
+                                        
+                                        <form @submit.prevent="updateProfileInfo" class="js-validate" method="post">
+                                            {% csrf_token %}
+
+                                            <div class="row">
+                                                <!-- Input -->
+                                                <div class="col-sm-6 mb-4">
+                                                    
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            Name <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <input id="name" type="text" class="form-control" name="name" placeholder="Enter Name" v-model="profile.name" />
+                                                    </div>
+                                                        
+                                                </div>
+                                                <!-- End Input -->
+
+
+                                                <!-- Input -->
+                                                <div class="col-sm-6 mb-4">
+                                                    
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            Email <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <input type="email" class="form-control" name="email" placeholder="Enter Email Address"  v-model="profile.email" />
+                                                    </div>
+                                                        
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <!-- Input -->
+                                                <div class="col-sm-6 mb-4">
+                                                    
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            National ID Number <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <input type="text" class="form-control" name="nid_number" placeholder="Enter National ID Number" v-model="profile.nid_card_num" />
+                                                    </div>
+                                                        
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <!-- Input -->
+                                                <div class="col-sm-6 mb-4">
+                                                    
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            Date of Birth <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <input type="date" class="form-control" name="date_of_birth" placeholder="Enter National ID Number" v-model="profile.date_of_birth" />
+                                                    </div>
+                                                       
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <!-- Input -->
+                                                <div class="col-sm-6 mb-4">
+                                                    
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            Gender <span class="text-danger">*</span>
+                                                        </label>&nbsp;&nbsp;&nbsp;
+                                                        <input type="radio" name="gender" value="1" v-model="profile.gender" /> Male
+                                                        <input type="radio" name="gender" value="2" v-model="profile.gender" /> Female
+                                                        <input type="radio" name="gender" value="3" v-model="profile.gender" /> Other
+
+                                                    </div>
+                                                        
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <div class="w-100"></div>
+
+                                                <!-- Input -->
+                                                <div class="col-sm-4 mb-4">
+                                                   
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            Country <span class="text-danger">*</span>
+                                                        </label>
+                                                        <select v-model="profile.country" @change="getStateByCountry" name="country" class="form-control dropdown-select"> 
+                                                            <option disabled value="">Select Country</option>
+                                                            <option v-for="country in allCountries" :value="country.country_id">${ country.country_name }</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <!-- Input -->
+                                                <div class="col-sm-4 mb-4">
+                                                    
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            State <span class="text-danger">*</span>
+                                                        </label>
+                                                        <select v-model="profile.state" @change="getCityByState()" name="state" class="form-control dropdown-select">
+                                                            <option disabled value="">Select State</option>
+                                                            <option v-for="state in allStateList" :value="state.state_id">${ state.state_name }</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <!-- Input -->
+                                                <div class="col-sm-4 mb-4">
+                                                    
+                                                    <div class="js-form-message">
+                                                        <label class="form-label">
+                                                            City <span class="text-danger">*</span>
+                                                        </label>
+                                                        <select v-model="profile.city" name="city" class="form-control dropdown-select">
+                                                            <option disabled value="">Select City</option>
+                                                            <option v-for="city in allCityList" :value="city.city_id">${ city.city_name }</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <div class="w-100"></div>
+
+                                                <div class="col">
+                                                    <!-- Input -->
+                                                    
+                                                    <div class="js-form-message mb-6">
+                                                        <label class="form-label">
+                                                            Address <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <div class="input-group">
+                                                            <textarea class="form-control" rows="4" name="address" placeholder="Enter Your Address" v-model="profile.user_address"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- End Input -->
+                                                </div>
+
+                                                <div class="w-100"></div>
+
+                                                <div class="col-sm-12 align-self-end">
+                                                    <div class="text-right">
+                                                        <button type="submit" class="btn badge-primary btn-wide rounded-sm transition-3d-hover font-size-16 font-weight-bold py-3 next-button" style="cursor: pointer;">Update</button>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+                                </div>
+                                
+                            </div>
+                            <!-- End Card -->
+                        </div>
+
+                        <div class="tab-pane" id="password-tab">
+                            
+                            <!-- Card -->
+                            <div class="card">
+
+                                <div class="card-header text-center">
+                                    <h3 class="text-dark font-weight-bold mb-2 d-block">Change Password</h3>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="">
+                                        
+                                        <form class="js-validate" method="post" @submit.prevent="changePassword">
+                                            {% csrf_token %}
+
+                                            <div class="row">
+
+                                                <!-- Input -->
+                                                <div class="col-sm-10 offset-sm-1">
+                                                    <div class="form-group">
+                                                        <label class="form-label">
+                                                            Old Password <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <input v-model="password.old_password" type="password" class="form-control" name="old_password" placeholder="Enter Old Password" />
+                                                    </div>
+                                                    <div class="alert alert-danger" role="alert" v-if="password.old_pass_msg">
+                                                      ${ password.old_pass_msg }
+                                                    </div>
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <!-- Input -->
+                                                <div class="col-sm-10 offset-sm-1">
+                                                    <div class="form-group">
+                                                        <label class="form-label">
+                                                            New Password <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <input v-model="password.new_password" type="password" class="form-control" name="new_password" placeholder="Enter New Password" />
+                                                    </div>
+                                                    <div class="alert alert-danger" role="alert" v-if="password.new_pass_msg">
+                                                      ${ password.new_pass_msg }
+                                                    </div>
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <!-- Input -->
+                                                <div class="col-sm-10 offset-sm-1">
+                                                    <div class="form-group">
+                                                        <label class="form-label">
+                                                            Confirm New Password <span class="text-danger">*</span>
+                                                        </label>
+
+                                                        <input @keyup="checkConfirmPassword" v-model="password.password_confirmation" type="password" class="form-control" name="password_confirmation" placeholder="Enter Confirm New Password" />
+                                                    </div> 
+                                                    <div class="alert alert-danger" role="alert" v-if="password.confirm_pass_msg">
+                                                      ${ password.confirm_pass_msg }
+                                                    </div>
+                                                </div>
+                                                <!-- End Input -->
+
+                                                <div class="col-sm-10 offset-sm-1">
+                                                    <div class="text-right">
+                                                        <button type="submit" class="btn badge-primary btn-wide rounded-sm transition-3d-hover font-size-16 font-weight-bold py-3 next-button" style="cursor: pointer;">Change Password</button>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </form>
+                                    </div>
+
+                                </div>
+                                
+                            </div>
+                            <!-- End Card -->
+                        </div>
+
+                        <div class="tab-pane" id="booking-tab">
+                            
+                            <!-- Card -->
+                            <div class="card">
+
+                                <div class="card-header text-center">
+                                    <h3 class="text-dark font-weight-bold mb-2 d-block">Booking List</h3>      
+                                </div>
+                                
+                                <div class="card-body mt-2">
+                                    <div class="table-responsive">
+                                        <table v-if="allBookingList.length != 0" class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>SL No.</th>
+                                                    <th>Booking No.</th>
+                                                    <th>Booking Status</th>
+                                                    <th>Total Amount</th>
+                                                    <th>Booking Date</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(booking, index) in allBookingList">
+                                                    <td>${ index + 1 }</td>
+                                                    <td>PORZ${bookingIdDateFormat(booking.created_at, "fullDate")}${booking.booking_id}</td>
+                                                    <td v-if="booking.booking_status == 1">Completed</td>
+                                                    <td v-else>Pending</td>
+                                                    <td>TK ${ booking.total_amount }</td>
+                                                    <td>${ dateTimeFormat(booking.created_at, "fullDate") }</td>
+                                                    <td><button type="button" @click="bookingDetails(booking.booking_id);" class="booking-details" data-toggle="modal" data-target=".bd-example-modal-lg">View Details</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <h2 v-else class="text-center">Empty Booking List</h2>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!-- End Card -->
+
+
+                            <!-- Modal -->
+                            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                              <div class="modal-dialog modal-xl" role="document">
+                                <div class="modal-content">
+
+                                  <div class="modal-header d-flex justify-content-between">
+                                    <div class="flex-fill">
+                                        <span>Booking No:  </span> <span class="font-weight-bold">PORZ${bookingIdDateFormat(singleBooking.created_at, "fullDate")}${singleBooking.booking_id}</span>
+                                    </div>
+
+                                    <div class="flex-fill">
+                                        <span>Booking Status:  </span> 
+                                        <span class="font-weight-bold" v-if="singleBooking.booking_status == 1">Completed</span>
+                                        <span class="font-weight-bold" v-else>Pending</span>
+                                    </div>
+
+                                    <div class="flex-fill">
+                                        <span>Booking Date:  </span> <span class="font-weight-bold">${ dateTimeFormat(singleBooking.created_at, "fullDate") }</span>
+                                    </div>
+                                    <button type="button" class="close closeBtnModal" data-dismiss="modal" aria-label="Close">
+                                      <span aria-hidden="true">&times;</span>
+                                    </button>
+                                  </div>
+
+                                  <div class="modal-body">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h6 class="text-center">Customer Information</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered" v-if="typeof singleBooking.customer_details === 'object'">
+                                                            <tr>
+                                                                <th>Name</th>
+                                                                <td>${singleBooking.customer_details.user_name}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Phone</th>
+                                                                <td>${singleBooking.customer_details.user_phone}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Address</th>
+                                                                <td>${singleBooking.customer_details.user_short_address}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6 class="text-center">Payment Information</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered">
+                                                            <tr>
+                                                                <th>Payment Method</th>
+                                                                <td>${ singleBooking.payment_method }</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Payment Status</th>
+                                                                <td>Paid</td>
+                                                            </tr>
+                                                            <tr v-if="singleBooking.payment_account_number">
+                                                                <th>Payment Number</th>
+                                                                <td>${ singleBooking.payment_account_number }</td>
+                                                            </tr>
+                                                            <tr v-if="singleBooking.transaction_code">
+                                                                <th>Transaction Code</th>
+                                                                <td>${ singleBooking.transaction_code }</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Total Amount</th>
+                                                                <td>TK. ${ singleBooking.total_amount }</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div> 
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <h6 class="text-center">Booking Information</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>#</th>
+                                                                    <th>Image</th>
+                                                                    <th>Hotel</th>
+                                                                    <th>Room</th>
+                                                                    <th>Check In</th>
+                                                                    <th>Check Out</th>
+                                                                    <th>Total Day</th>
+                                                                    <th>Price per day(TK)</th>
+                                                                    <th>Total(TK)</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr v-for="(bookingInfo, index) in singleBooking.booking_information">
+                                                                    <td>${index + 1}</td>
+                                                                    <td><img class="img-fluid room-image" :src="bookingInfo.room_details.image_url[0].Image" :alt="bookingInfo.room_details.room_name"></td>
+                                                                    <td>${ bookingInfo.room_details.hotel_details.hotel_name }</td>
+                                                                    <td>${ bookingInfo.room_details.room_name }</td>
+                                                                    <td>${ dateTimeFormat(bookingInfo.check_in_date, "fullDate") }</td>
+                                                                    <td>${ dateTimeFormat(bookingInfo.check_out_date, "fullDate") }</</td>
+                                                                    <td>${ bookingInfo.total_day } Days</td>
+                                                                    <td>${ bookingInfo.static_offer_price }</td>
+                                                                    <td>${ bookingInfo.static_offer_price * bookingInfo.total_day }</td>
+                                                                </tr>
+                                                            </tbody>
+                                                            <tr>
+                                                                <td colspan="8" class="text-right font-weight-bold font-italic">Sub Total(TK)</td>
+                                                                <td class="text-right font-weight-bold">${ subtotal }</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="8" class="text-right font-weight-bold font-italic">Total Price(TK)</td>
+                                                                <td class="text-right font-weight-bold">${ total }</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div> 
+                                            </div> 
+                                        </div>
+                                    </div>
+                                  </div>
+
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn badge-primary" data-dismiss="modal">Back</button>
+                                  </div>
+
+                                </div>
+                              </div>
+                            </div>
+                            <!-- End Modal -->
+
+
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+
+        <!-- ========== END MAIN CONTENT ========== -->
+{% block custom_js %}
+    <!-- moment js for date time format -->
+    <script src="{% static 'frontEnd/assets/js/customjs/moment.min.js' %}"></script>
+    <script type="text/javascript">
+        Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+    </script>
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#profile',
+            delimiters: ['${','}'],
+            data: {
+                session_id: "{{ request.session.session_id }}",
+                user_id: "{{ request.session.user_id }}",
+                // user_name: "",
+                userInfo: {
+                    user_image: null,
+                },
+                allCountries: [],
+                allStateList: [],
+                allCityList: [],
+                allBookingList: [],
+                singleBooking: {},
+                profile: {
+                    name: '',
+                    email: '',
+                    nid_card_num: '',
+                    date_of_birth: '',
+                    gender: '',
+                    country: '',
+                    state: '',
+                    city: '',
+                    user_address: ''
+                },
+                password: {
+                    old_password: null,
+                    new_password: null,
+                    password_confirmation: null,
+                    old_pass_msg: null,
+                    new_pass_msg: null,
+                    confirm_pass_msg: null,
+                },
+                preview: null,
+                subtotal: 0,
+                total: 0,
+            },
+            computed: {  
+            },
+            mounted: function() {
+                this.getUserInfo();
+                this.getBookingInfo();
+                this.getAllCountries();
+            },
+            methods: {
+                previewImage(event) {
+                  var input = event.target;
+                  if (input.files) {
+                    var reader = new FileReader();
+                    reader.onload = (e) => {
+                      this.preview = e.target.result;
+                      this.$http.put(`/api/profile-photo-change/${this.user_id}/`, {'profile_image': this.preview})
+                        .then((resp) => {
+                            this.userInfo.user_image = resp.data.data.user_image;
+                            iziToast.show({
+                                title: 'Success!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'green',
+                                message: 'Profile Photo Changed Successfully.',
+                                messageColor: 'black'
+                            });
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                    }
+                    // this.image = input.files[0];
+                    reader.readAsDataURL(input.files[0]);
+                  }
+                },
+                async getUserInfo(){
+                    const result = await this.$http.get(`/api/user/${this.user_id}/`);
+                    this.userInfo = result.data.data;
+                    this.profile.name = result.data.data.user_name;
+                    this.profile.email = result.data.data.user_email,
+                    this.profile.nid_card_num = result.data.data.user_national_id_card,
+                    this.profile.date_of_birth = result.data.data.date_of_birth,
+                    this.profile.gender = result.data.data.gender,
+                    this.profile.user_address = result.data.data.user_short_address
+                    // this.profile.city = result.data.data.city.city_name
+                    // this.profile.state = result.data.data.city.state.state_id,
+                    // this.profile.country = result.data.data.city.state.country.country_id
+                },
+                getAllCountries: function() {
+
+                    this.$http.get(`/api/country/`)
+                        .then((resp) => {
+                            this.allCountries = resp.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                getStateByCountry: function(){
+                    this.$http.get(`/api/state_by_country/${this.profile.country}`)
+                      .then((resp) => {
+                        this.allStateList = resp.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getCityByState: function(){
+                    this.$http.get(`/api/city_by_state/${this.profile.state}`)
+                      .then((resp) => {
+                        this.allCityList = resp.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                dateTimeFormat(date, dateType) {
+                    const date1 = new Date(date);
+                    if (dateType === "fullDate") {
+                        return moment(date1).format("MMMM D, YYYY");
+                    }
+                },
+                bookingIdDateFormat(date, dateType) {
+                    const date1 = new Date(date);
+                    if (dateType === "fullDate") {
+                        return moment(date1).format('L').split("/").join("");
+                    }
+                },
+                checkConfirmPassword(){
+                    if (this.password.new_password != this.password.password_confirmation) {
+                        this.password.confirm_pass_msg = 'New Password and Confirm New Password does not match.';
+                    }else{
+                        this.password.confirm_pass_msg = null;
+                    }
+                },
+                async changePassword(){
+
+                    if (!this.password.old_password) {
+                        this.password.old_pass_msg = "Old Password field required.";
+                    }else{
+                        this.password.old_pass_msg = "";
+                    }
+
+                    if (!this.password.new_password) {
+                        this.password.new_pass_msg = "New Password field required.";
+                    }else{
+                        this.password.new_pass_msg = "";
+                    }
+
+                    if (!this.password.password_confirmation) {
+                        this.password.confirm_pass_msg = "Confirm Password field required.";
+                    }else{
+                        this.password.confirm_pass_msg = "";
+                    }
+
+                    const result = await this.$http.put(`/api/change-user-password/${this.user_id}/`, {
+                        'old_password': this.password.old_password,
+                        'new_password': this.password.new_password,
+                    });
+
+                    if(result.data.error === false){
+                        this.password.old_password = null;
+                        this.password.new_password = null;
+                        this.password.password_confirmation = null;
+                        iziToast.show({
+                            title: 'Success!',
+                            position: 'topRight',
+                            timeout: 3000,
+                            color: 'green',
+                            message: 'Password Changed Successfully.',
+                            messageColor: 'black'
+                        });
+                    }else{
+                        iziToast.show({
+                            title: 'Oppps!',
+                            position: 'topRight',
+                            timeout: 3000,
+                            color: 'red',
+                            message: 'Password does not match.',
+                            messageColor: 'black'
+                        });
+                    }
+                },
+                async updateProfileInfo(){
+
+                    if (!this.profile.name || !this.profile.email || !this.profile.gender || !this.profile.date_of_birth || !this.profile.user_address || !this.profile.city || !this.profile.state || !this.profile.country || !this.profile.nid_card_num) {
+                        iziToast.show({
+                            title: 'Oppps!',
+                            position: 'topRight',
+                            timeout: 2000,
+                            color: 'red',
+                            message: 'Field must mot be empty',
+                            messageColor: 'black'
+                        });
+                    }else{
+                        const result = await this.$http.put(`/api/user/${this.user_id}/`, {
+                            'name': this.profile.name,
+                            'email': this.profile.email,
+                            'gender': this.profile.gender,
+                            'date_of_birth': this.profile.date_of_birth,
+                            'user_address': this.profile.user_address,
+                            'city': this.profile.city,
+                            'nid_card_num': this.profile.nid_card_num,
+                        });
+
+                        if(result.data.error === false){
+                            this.getUserInfo();
+                            // this.user_name = result.data.data.user_name;
+                            iziToast.show({
+                                title: 'Success!',
+                                position: 'topRight',
+                                timeout: 3000,
+                                color: 'green',
+                                message: 'Profile Information Updated Successfully.',
+                                messageColor: 'black'
+                            });
+                        } else {
+                            iziToast.show({
+                                title: 'Oppps!',
+                                position: 'topRight',
+                                timeout: 3000,
+                                color: 'red',
+                                message: 'Profile Information Not Updated',
+                                messageColor: 'black'
+                            });
+                        }
+                    }
+                },
+                async getBookingInfo(){
+                    const result = await this.$http.get(`/api/booking-details/?user_id=${this.user_id}`);
+                    if(result.data.error === false){
+                        this.allBookingList = result.data.data;
+                    }
+                },
+                async bookingDetails(id){
+                    const result = await this.$http.get(`/api/booking-details/${id}/`);
+                    if (result.data.error === false) {
+                        this.singleBooking = result.data.data;
+                        
+                        // calculate subtotal and total price
+                        this.subtotal = 0;
+                        this.total = 0;
+                        this.singleBooking.booking_information.forEach(item => {
+                            this.total = this.subtotal += item.static_offer_price * item.total_day;
+                        });
+                    }
+                },
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->    
+
+{% endblock %}

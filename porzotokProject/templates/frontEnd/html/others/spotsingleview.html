@@ -1,0 +1,184 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok{% endblock  %}
+
+{% block custom_css %}
+<style>
+.section-title::after, .tab-nav-pill .nav-link.active {
+    background-color: #C20035 !important;
+}  
+.card-title.text-dark:hover {
+    color: #C20035 !important;
+} 
+</style>
+{% endblock  %}
+
+{% block main_content %}
+<!-- ========== MAIN CONTENT ========== -->
+<main id="content">
+<!-- ========== HERO ========== -->
+<div class="hero-block hero-v1 bg-img-hero-bottom gradient-overlay-half-black-gradient text-center z-index-2" style="background-image: url({% static 'frontEnd/assets/img/1920x750/img4.png' %});">
+    <div class="container space-2 space-top-xl-9">
+        <div class="text-center pb-xl-8">
+            <!-- Info -->
+            <div class="pt-xl-6">
+                {% for single_spot in tourist_spots %}
+                <h1 class="font-size-60 font-size-xs-30 text-white font-weight-bold">{{single_spot.tourist_spot_name}}</h1>
+                    {% if single_spot.tag_line %}
+                    <p class="font-size-20 font-weight-normal text-white">{{single_spot.tag_line}}</p>
+                    {% endif %}
+                {% endfor%}
+            </div>
+            <!-- End Info -->
+        </div>
+    </div>
+</div>
+<!-- ========== END HERO ========== -->
+
+<!-- Destinantion  -->
+<div class="border-bottom border-color-8">
+    {% for single_spots in tourist_spots %}
+    <div class="container space-bottom-1 space-top-lg-3">
+        <div class="w-md-80 w-lg-50 text-center mx-md-auto mb-4 mb-xl-7 pb-xl-1">
+            <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Welcome to {{single_spots.tourist_spot_name}}</h2>
+        </div>
+        <div class="w-lg-80 w-xl-60 mx-auto collapse_custom position-relative mb-4 pb-xl-1">
+            <p>
+                <span v-show="defaultText">{{ single_spots.description|truncatewords:30 }}</span>
+                <span class="collapse" id="collapseLinkExample">{{ single_spots.description }}</span>
+            </p>
+
+
+             <a class="link-collapse link-collapse-custom gradient-overlay-half mb-5 d-inline-block border-bottom border-blackk" data-toggle="collapse" href="#collapseLinkExample" role="button" aria-expanded="false" aria-controls="collapseLinkExample">
+                <span class="link-collapse__default font-size-14" @click="viewMoreHide">View More <i class="flaticon-down-chevron font-size-10 ml-1"></i></span>
+            </a>
+        </div>
+    </div>
+    {% endfor%}
+</div>
+<!-- End Destinantion -->
+<!-- Tabs v1 -->
+<!-- Product Cards Ratings With carousel -->
+<div class="product-card-block product-card-v3">
+    <div class="container-fluid space-top-2 space-top-lg-3">
+        <div class="w-md-80 w-lg-50 text-center mx-md-auto pb-4 mt-xl-4">
+            <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Most Popular Hotels</h2>
+        </div>
+        <div class="js-slick-carousel u-slick u-slick--equal-height u-slick--gutters-3"
+            data-slides-show="5"
+            data-slides-scroll="1"
+            data-arrows-classes="d-none d-lg-inline-block u-slick__arrow-classic v1 u-slick__arrow-classic--v1 u-slick__arrow-centered--y rounded-circle"
+            data-arrow-left-classes="fas fa-chevron-left u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left shadow-5"
+            data-arrow-right-classes="fas fa-chevron-right u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right shadow-5"
+            data-pagi-classes="text-center u-slick__pagination mt-4"
+            data-responsive='[{
+            "breakpoint": 1025,
+            "settings": {
+            "slidesToShow": 3
+            }
+            }, {
+            "breakpoint": 992,
+            "settings": {
+            "slidesToShow": 2
+            }
+            }, {
+            "breakpoint": 768,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }, {
+            "breakpoint": 554,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }]'>
+            {% for s_hotel in spots_by_hotels %}
+            <div class="js-slide mt-2">
+                <div class="card transition-3d-hover shadow-hover-2 h-100 w-100">
+                    <div class="position-relative">
+                        <a href="/hotel/{{ s_hotel.slug }}" class="d-block gradient-overlay-half-bg-gradient-v5">
+                            <img class="card-img-top" src="{{ s_hotel.image }}" alt="Image Description">
+                        </a>
+                        <div class="position-absolute top-0 right-0 pt-3 pr-3">
+                          <button type="button" class="btn btn-sm btn-icon text-white rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                            <span class="flaticon-heart-1 font-size-20"></span>
+                          </button>
+                        </div>
+                        <div class="position-absolute bottom-0 left-0 right-0">
+                            <div class="px-4 pb-3">
+                                <a href="/hotel/{{ s_hotel.slug }}" class="d-block">
+                                    <div class="d-flex align-items-center font-size-14 text-white">
+                                        <i class="icon flaticon-placeholder mr-2 font-size-20"></i> {{s_hotel.city}}, {{s_hotel.state}}, {{s_hotel.country}}
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pt-2 pb-3">
+                        <div class="mb-2">
+                            <div class="d-inline-flex align-items-center font-size-13 text-lh-1 text-primary letter-spacing-3">
+                                <div class="green-lighter">
+                                    {% with rating=s_hotel.hotel_id.hotel_id|average_rating_count %} 
+                                        {% for i in 1|range:6 %}
+                                            {% if i <= rating %}
+                                                <small class="fas fa-star ac-color"></small>
+                                            {% else %}
+                                                <small class="fas fa-star"></small>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/hotel/{{ s_hotel.slug }}" class="card-title font-size-17 font-weight-medium text-dark">{{s_hotel.hotel_name}}</a>
+                        <div class="mt-2 mb-3">
+                            <span class="badge badge-pill badge-primary py-1 px-2 font-size-14 border-radius-3 font-weight-normal">4.6/5</span>
+                            <span class="font-size-14 text-gray-1 ml-2">({{s_hotel.hotel_id.hotel_id|total_review_count}} reviews)</span>
+                        </div>
+                        <div class="mb-0">
+                            <span class="mr-1 font-size-14 text-gray-1">From</span>
+                            <span class="font-weight-bold">TK. {{s_hotel.hotel_id|hotel_min_price }}</span>
+                            <span class="font-size-14 text-gray-1"> / night</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- End Product Cards Ratings With carousel -->
+<!-- End Tabs v1 -->
+<!-- <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835253576489!2d144.95372995111143!3d-37.817327679652266!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato!5e0!3m2!1sen!2sin!4v1581584770980!5m2!1sen!2sin" width="100%" height="500" frameborder="0" style="border:0;" allowfullscreen=""></iframe> -->
+<!-- Recent Articles -->
+
+<!-- End Icon Block v1 -->
+</main>
+<!-- ========== END MAIN CONTENT ========== -->
+{% endblock %}
+
+{% block custom_js %}
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue.js' %}"></script>
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue-resources.js' %}"></script>
+
+<!-- vue js scripts start -->
+<script type="text/javascript">
+
+    new Vue({
+        el: '#content',
+        delimiters: ['${','}'],
+        data: { 
+            defaultText: true,  
+        },
+        methods: {
+            viewMoreHide(){
+                this.defaultText = false;
+            },
+        }
+        
+    });
+</script>
+<!-- vue js scripts end -->
+{% endblock %}

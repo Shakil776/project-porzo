@@ -1,0 +1,192 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Confirm Booking Details{% endblock  %}
+
+{% block custom_css %}
+
+{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Confirm Booking List</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Confirm Booking List</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing" >
+
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Confirm Booking List</h4><br>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="row">
+                    <div class="col-sm-4">
+                        Show
+                        <select v-model="perPage" @change="handlePageSizeChange($event)">
+                            <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                        </select>
+                        entries
+                    </div>
+                
+                    <div class="col-sm-4 offset-sm-4">
+                      <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search" v-model="searchKey"  @keyup="getSearchData" />
+                      </div>
+                    </div>
+                </div>
+                
+
+                <div class="table-responsive mb-4 mt-4">
+
+                    <table class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Booking ID</th>
+                                <th>Payable Amount</th>
+                                <th>Booking Status</th>
+                                <th>Book By User</th>
+                                <th>Show Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-if="allConfirmBookingList.length" v-for="books in allConfirmBookingList" :key="books.confirm_booking_id">
+                                <td>${ books.confirm_booking_id }</td>
+                                <td>PORZOTOK${ books.booking_id }</td>
+                                <td>TK. ${ books.total_payable_amount }</td>
+                                <td v-if="books.booking_status == 1">
+                                    Completed
+                                </td>
+                                <td v-else-if="books.booking_status == 2">
+                                    Pending 
+                                </td>
+                                <td>${ books.user_details.user_name }</td>
+                                <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                                  button
+                                </button></td>
+                            </tr>
+
+                            <tr v-show="!allConfirmBookingList.length" class="text-center"><td colspan="8">No Data</td></tr>
+
+                        </tbody>
+                        
+                    </table>
+
+                     <div v-if="allConfirmBookingList.length">
+                        <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last"></b-pagination>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Book Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+
+        <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-6">view</div>
+              <div class="col-md-6">view</div>
+            </div>
+   
+    
+  </div>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allConfirmBookingList : [],
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                hide_or_vis : "none",
+                logged_user_id: {{ request.session.uid }},
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+                searchKey: null,
+
+            },
+            mounted: function() {
+                this.getAllConfirmBookingList();   
+            },
+            methods: {               
+                async getAllConfirmBookingList() {
+                    await this.$http.get(`/admin-api/single-booking/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allConfirmBookingList = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllConfirmBookingList();
+                },
+                async getSearchData() {
+                    if (this.searchKey != null && this.logged_user_id != null) {
+                        const result = await this.$http.get(`/admin-api/single-booking-search/?user_id=${this.logged_user_id}&key=${this.searchKey}`);
+                        if (result.data.error === false) {
+                            this.allConfirmBookingList = result.data.data;
+                            this.totalItems = result.data.count;
+                        }
+                    } 
+                },
+            },
+            watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllConfirmBookingList();
+                  }
+                }
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+
+
+{% endblock %}

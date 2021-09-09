@@ -1,0 +1,244 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Logo{% endblock  %}
+
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Logo</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Logo</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Upload Logo</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add Food Menu -->
+                    <form @submit.prevent="addImages" id="addImagesForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="LogoImage">Logo Image</label> <br/>
+                                <input @change="onFileChange" type="file" name="logo_photo" id="LogoImage"/>
+                            </div>
+
+                            <!-- <div class="form-group col-md-6">
+                                <label for="bannerImage">Banner Image</label>
+                                <input @change="onFileChanges" type="file" class="form-control" name="banner_photo" id="bannerImage"/>
+                            </div> -->
+                        </div>
+
+                      <button type="submit" class="btn btn-primary mt-3">Upload Logo</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- add form end -->
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Image List</h4>
+
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="row">
+                    <div class="col-sm-4">
+                        Show
+                        <select v-model="perPage" @change="handlePageSizeChange($event)">
+                            <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                        </select>
+                        entries
+                    </div>
+                </div>
+                
+
+                <div class="table-responsive mb-4 mt-4">
+
+                    <table class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Logo Image</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="allHotelUserPhotos.length" v-for="(images_l, index) in allHotelUserPhotos" :key="images_l.photo_id">
+                                <td>${ index+1 }</td>
+                                <td>
+                                    <div class="d-flex">
+                                        <div class="usr-img-frame mr-2 rounded-circle">
+                                            <img alt="avatar" class="img-fluid rounded-circle" :src="images_l.logo_photo">
+                                        </div>
+                                    </div>
+                                </td>
+                                <!-- <td>
+                                    <div class="d-flex">
+                                        <div class="usr-img-frame mr-2 rounded-circle">
+                                            <img alt="avatar" class="img-fluid rounded-circle" :src="images_l.banner_photo">
+                                        </div>
+                                    </div>
+                                </td> -->
+
+                                <td>
+                                    <a @click.prevent="deleteImageList(images_l.photo_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            <tr v-show="!allHotelUserPhotos.length" class="text-center"><td colspan="8">No Data</td></tr>
+                        </tbody>
+                        
+                    </table>
+
+                     <div v-if="allHotelUserPhotos.length">
+                        <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last"></b-pagination>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allHotelUserPhotos : [],
+                // hotel_user_owner_id : null,
+                // banner_photo : null,
+                logo_photo : null,
+                logged_user_id: "{{ request.session.uid }}",
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+            },
+            mounted: function() {
+                this.getAllHotelUserPhotos();
+            },
+            methods: {
+                addImages: function(event) {
+                    let form_data = new FormData();
+                    form_data.append('logo_photo', this.logo_photo);
+
+                    /*form_data.append('banner_photo', this.banner_photo);*/
+                    // if(this.banner_photo != null){
+                    //     form_data.append('banner_photo', this.banner_photo);
+                    // }
+                    form_data.append('hotel_user_owner_id', "{{request.session.uid}}");
+                    this.$http.post(`/admin-api/hotel-user-photo/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.getAllHotelUserPhotos();
+
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Upload Image Successfully',
+                                    messageColor: 'black'
+                                });
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                onFileChange(event) {
+                    this.logo_photo = event.target.files[0];
+                    /*this.banner_photo = event.target.files[0];*/
+                },
+                // onFileChanges(events) {
+                //     this.banner_photo = events.target.files[0];
+                // },
+                async getAllHotelUserPhotos() {
+                    await this.$http.get(`/admin-api/logo-image-list/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allHotelUserPhotos = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllHotelUserPhotos();
+                },
+                deleteImageList: function(pid){
+                    swal({
+                      title: 'Are you sure?',
+                      text: "You won't be able to revert this!",
+                      type: 'warning',
+                      showCancelButton: true,
+                      confirmButtonText: 'Delete',
+                      padding: '2em'
+                    }).then((result) => {
+                      if (result.value){
+
+                        this.$http.delete(`/admin-api/hotel-user-photo/${pid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Image Deleted Successfully',
+                                    messageColor: 'black'
+                                });
+                                this.getAllHotelUserPhotos();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+
+                      }
+                    });
+                },
+
+            },
+            watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllHotelUserPhotos();
+                  }
+                }
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

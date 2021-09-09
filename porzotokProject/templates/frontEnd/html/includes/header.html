@@ -1,0 +1,562 @@
+{% load static %}
+<header id="header" v-cloak class="u-header u-header--dark-nav-links-xl u-header--show-hide-xl u-header--static-xl" data-header-fix-moment="500" data-header-fix-effect="slide">
+    <div class="u-header__section u-header__shadow-on-show-hide py-4 py-xl-0">
+        <!-- Topbar -->
+        <div class="container-fluid u-header__hide-content u-header__topbar u-header__topbar-lg border-bottom border-color-8">
+            <div class="d-flex align-items-center">
+                <ul class="list-inline list-inline-dark u-header__topbar-nav-divider--dark mb-0">
+                    <li class="list-inline-item mr-0">
+                        <span class="u-header__navbar-link">
+                            <i class="fas fa-phone"></i>&nbsp;&nbsp;+880 1779224640</span>
+                    </li>
+                    <li class="list-inline-item mr-0">
+                        <span class="u-header__navbar-link"><i class="fas fa-envelope"></i>&nbsp;&nbsp;info@porzotok.com</span>
+                    </li>
+                </ul>
+                <div class="ml-auto d-flex align-items-center">
+                    <ul class="list-inline mb-0 mr-2 pr-1">
+                        <li class="list-inline-item">
+                            <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://www.facebook.com/" target="_blank">
+                                <span class="fab fa-facebook-f btn-icon__inner"></span>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://twitter.com/" target="_blank">
+                                <span class="fab fa-twitter btn-icon__inner"></span>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://www.instagram.com/" target="_blank">
+                                <span class="fab fa-instagram btn-icon__inner"></span>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://www.linkedin.com/" target="_blank">
+                                <span class="fab fa-linkedin-in btn-icon__inner"></span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div v-if="isLogin">
+                        <a href="javascript:;" class="d-flex align-items-center text-dark"  data-toggle="dropdown">
+                            <i class="flaticon-user mr-2 ml-1 font-size-18"></i>
+                            <span class="d-inline-block font-size-14 mr-1 text-bold">${user_name}</span>
+                        </a>
+
+                        <div class="dropDownItem" @click="$event.stopPropagation()">
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'webapp:profile' %}">Profile</a>
+                                <a @click="customerLogout" class="dropdown-item" href="javascript:">Logout</a>
+                            </div>
+                        </div>  
+                    </div>
+
+                    <div v-else class="position-relative px-3 u-header__login-form dropdown-connector-xl u-header__topbar-divider--dark">
+
+                        <a id="signUpDropdownInvoker"  href="javascript:;" class="d-flex align-items-center" aria-controls="signUpDropdown" aria-haspopup="true" aria-expanded="true" data-unfold-event="click" data-unfold-target="#signUpDropdown" data-unfold-type="css-animation" data-unfold-duration="300" data-unfold-delay="300" data-unfold-hide-on-scroll="true" data-unfold-animation-in="slideInUp" data-unfold-animation-out="fadeOut">
+                            <span class="d-inline-block font-size-14 mr-1 h_login-style">Login</span>
+                        </a>
+
+                        <div id="signUpDropdown" class="dropdown-menu dropdown-unfold dropdown-menu-right py-0 mt-0" aria-labelledby="signUpDropdownInvoker" style="min-width: 500px;">
+                            <div class="card rounded-xs">
+                                <form class="js-validate" novalidate="novalidate" method="post">
+
+                                    <!-- Login -->
+                                    <div id="login" style="opacity: 1;" data-target-group="idForm" class="animated fadeIn">
+                                        <!-- Header -->
+                                        <div class="card-header text-center">
+                                            <h3 class="h5 mb-0 font-weight-semi-bold">Login</h3>
+                                        </div>
+                                        <!-- End Header -->
+                                        <div class="card-body pt-6 pb-4">
+                                            <!-- Form Group -->
+                                            <div class="form-group pb-1">
+                                                <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                    <label class="sr-only" for="login">Mobile</label>
+                                                    <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                        <input v-model="login_mobile" type="text" class="form-control" name="mobile" id="login" placeholder="Mobile" aria-label="Mobile" aria-describedby="mobile" required="" data-msg="Please enter a valid mobile number." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                        <div class="input-group-append" onautocomplete="off">
+                                                            <span class="input-group-text" id="mobile">
+                                                                <span class="fas fa-mobile-alt font-size-20"></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Form Group -->
+                                            <!-- Form Group -->
+                                            <div class="form-group pb-1">
+                                                <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                    <label class="sr-only" for="signinSrPassword">Password</label>
+                                                    <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                        <input v-model="login_password" type="password" class="form-control" name="password" id="signinSrPassword" placeholder="Password" aria-label="Password" aria-describedby="signinPassword" required="" data-msg="Your password is invalid. Please try again." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text" id="signinPassword">
+                                                                <span class="flaticon-password font-size-20"></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Form Group -->
+                                            <div class="mb-3 pb-1">
+                                                <button @click.prevent="userLogin"  type="submit" class="btn btn-md btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Login</button>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <div class="custom-control custom-checkbox custom-control-inline">
+                                                    <input type="checkbox" id="customCheckboxInline1" name="customCheckboxInline1" class="custom-control-input">
+                                                    <label class="custom-control-label" for="customCheckboxInline1">Remember me</label>
+                                                </div>
+                                                <a class="js-animation-link text-black font-size-14" href="javascript:;" data-target="#forgotPassword" data-link-group="idForm" data-animation-in="fadeIn"><u>Forgot Password?</u></a>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-footer p-0">
+                                            
+                                            <div class="card-footer__bottom p-4 text-center font-size-14">
+                                                <span class="text-gray-1">Don't have an account?</span>
+                                                <a class="js-animation-link font-weight-bold text-logo-color" href="javascript:;" data-target="#signup" data-link-group="idForm" data-animation-in="fadeIn">Sign Up</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Login -->
+
+                                    <!-- Signup -->
+                                    <div id="signup" style="opacity: 0; display: none;" data-target-group="idForm">
+                                        <!-- Header -->
+                                        <div class="card-header text-center">
+                                            <h3 class="h5 mb-0 font-weight-semi-bold">Register</h3>
+                                        </div>
+                                        <!-- End Header -->
+                                        <div class="card-body pt-5 pb-4">
+                                            
+                                            <div class="tab-content">
+                                                <form>
+                                                <div class="tab-pane fade active show" id="pills-one-code-sample" role="tabpanel" aria-labelledby="pills-one-code-sample-tab">
+                                                    <!-- Form Group -->
+                                                    <div class="form-group pb-1">
+                                                        <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                            <label class="sr-only" for="name">Name</label>
+                                                            <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                <input v-model="name" type="text" class="form-control" name="name" id="name" placeholder="Full Name" aria-label="Full Name" aria-describedby="name" required="" data-msg="Please enter a valid name." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text" id="name">
+                                                                        <span class="flaticon-user font-size-20"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Form Group -->
+
+                                                    <!-- Form Group -->
+                                                    <div class="form-group pb-1">
+                                                        <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                            <label class="sr-only" for="mobile">Mobile</label>
+                                                            <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                <input v-model="mobile" type="text" class="form-control" name="mobile" id="mobile" placeholder="Mobile Number" aria-label="Mobile" aria-describedby="mobile" required="" data-msg="Please enter a valid mobile number." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text" id="mobile">
+                                                                        <span class="fas fa-mobile-alt font-size-20"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Form Group -->
+
+                                                    <!-- Form Group -->
+                                                    <div class="form-group pb-1">
+                                                        <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                            <label class="sr-only" for="signupSrEmail">Email</label>
+                                                            <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                <input v-model="email" type="email" class="form-control" name="email" id="signupSrEmail" placeholder="Email" aria-label="Email" aria-describedby="signupEmail" required="" data-msg="Please enter a valid email address." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text" id="signupEmail">
+                                                                        <span class="far fa-envelope font-size-20"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Form Group -->
+
+                                                    <!-- Form Group -->
+                                                    <div class="form-group pb-1">
+                                                        <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                            <label class="sr-only" for="signupSrPassword">Password</label>
+                                                            <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                <input v-model="password" type="password" class="form-control" name="password" id="signupSrPassword" placeholder="Password" aria-label="Password" aria-describedby="signupPassword" required="" data-msg="Your password is invalid. Please try again." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                <div class="input-group-prepend">
+                                                                    <span class="input-group-text" id="signupPassword">
+                                                                        <span class="flaticon-password font-size-20"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Form Group -->
+                                                    
+                                                    <!-- <div class="d-flex justify-content-between mb-1">
+                                                        <div class="custom-control custom-checkbox custom-control-inline">
+                                                            <input type="checkbox" id="customCheckboxInline2" name="customCheckboxInline2" class="custom-control-input">
+                                                            <label class="custom-control-label" for="customCheckboxInline2">I have read and accept the <a href="#">Terms and Privacy Policy</a></label>
+                                                        </div>
+                                                    </div> -->
+
+                                                    <div class="mb-3 pb-1">
+                                                        <button @click.prevent="customerRegistration" type="submit" class="btn btn-md btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Register</button>
+                                                    </div>
+
+                                                </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer p-0">
+                                            
+
+                                            <div class="card-footer__bottom p-4 text-center font-size-14">
+                                                <span class="text-gray-1">Already have an account?</span>
+                                                <a class="js-animation-link font-weight-bold text-logo-color" href="javascript:;" data-target="#login" data-link-group="idForm" data-animation-in="fadeIn">Login</a>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <!-- End Signup -->
+
+                                    <!-- Forgot Passwrd -->
+                                    <div id="forgotPassword" style="opacity: 0; display: none;" data-target-group="idForm">
+                                        <!-- Header -->
+                                        <div class="card-header bg-light text-center py-3 px-5">
+                                            <h3 class="h6 mb-0 font-weight-semi-bold">Recover password</h3>
+                                        </div>
+                                        <!-- End Header -->
+                                        <div class="card-body px-10 py-5">
+                                            <!-- Form Group -->
+                                            <div class="form-group">
+                                                <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                    <label class="sr-only" for="recoverSrEmail">Your email</label>
+                                                    <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                        <input type="email" class="form-control" name="email" id="recoverSrEmail" placeholder="Your email" aria-label="Your email" aria-describedby="recoverEmail" required="" data-msg="Please enter a valid email address." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text" id="recoverEmail">
+                                                                <span class="far fa-envelope font-size-20"></span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Form Group -->
+                                            <div class="mb-2">
+                                                <button type="submit" class="btn btn-sm btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Recover Password</button>
+                                            </div>
+                                            <div class="text-center font-size-14">
+                                                <span class="text-gray-1">Remember your password?</span>
+                                                <a class="js-animation-link font-weight-bold" href="javascript:;" data-target="#login" data-link-group="idForm" data-animation-in="fadeIn">Log In</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- End Forgot Passwrd -->
+                                </form>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Topbar -->
+        <div id="logoAndNav" class="container-fluid py-xl-2 border-bottom-xl">
+            <!-- Nav -->
+            <nav class="js-mega-menu navbar navbar-expand-xl u-header__navbar u-header__navbar--no-space">
+                <!-- Logo -->
+                <a href="{% url 'webapp:home' %}" aria-label="Porzotok" class="navbar-brand u-header__navbar-brand-default u-header__navbar-brand-center u-header__navbar-brand-text-dark-xl">
+                    <img src="{% static 'frontEnd/assets/img/logo/logo.png' %}" width="135px">
+                </a>
+                <!-- End Logo -->
+
+                <!-- Responsive Toggle Button -->
+                <button type="button" class="navbar-toggler btn u-hamburger u-hamburger--primary order-2 ml-3" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navBar" data-toggle="collapse" data-target="#navBar">
+                    <span id="hamburgerTrigger" class="u-hamburger__box">
+                        <span class="u-hamburger__inner"></span>
+                    </span>
+                </button>
+                <!-- End Responsive Toggle Button -->
+
+                <!-- Navigation -->
+                <div id="navBar" class="navbar-collapse u-header__navbar-collapse collapse order-2 order-xl-0 pt-4 p-xl-0 position-relative">
+                    <ul class="navbar-nav u-header__navbar-nav">
+                        <!-- Home -->
+                        <li class="nav-item u-header__nav-item">
+                            <a class="nav-link u-header__nav-link u-header__nav-link-border" href="{% url 'webapp:home' %}">Home</a>
+                        </li>
+                        <!-- End Home -->
+
+                        <!-- Hotel -->
+                        <li class="nav-item u-header__nav-item" data-event="hover" data-animation-in="slideInUp" data-animation-out="fadeOut">
+                            <a id="hotelMenu" class="nav-link u-header__nav-link u-header__nav-link-border" href="{% url 'webapp:hotel' %}">Hotel</a>
+                        </li>
+                        <!-- End Hotel -->
+
+                        <!-- Event -->
+                        <li class="nav-item u-header__nav-item">
+                            <a id="tourMegaMenu" class="nav-link u-header__nav-link" href="{% url 'webapp:event' %}">Event</a>
+                          <!-- End Tour - Mega Menu -->
+                        </li>
+                        <!-- End Event -->
+
+                        <!-- Services -->
+                        <li class="nav-item hs-has-sub-menu u-header__nav-item" data-event="hover" data-animation-in="slideInUp" data-animation-out="fadeOut">
+                            <a id="hotelMenu" class="nav-link u-header__nav-link u-header__nav-link-toggle u-header__nav-link-border" href="javascript:;" aria-haspopup="true" aria-expanded="false" aria-labelledby="hotelSubMenu">Services</a>
+                            
+                            <ul id="hotelSubMenu" class="hs-sub-menu u-header__sub-menu u-header__sub-menu-rounded u-header__sub-menu-bordered hs-sub-menu-right u-header__sub-menu--spacer" aria-labelledby="hotelMenu" style="min-width: 230px;">
+                                <li><a class="nav-link u-header__sub-menu-nav-link" href="{% url 'webapp:services' %}">Service</a></li>
+                            </ul>
+                            
+                        </li>
+                        <!-- End Services -->
+
+                        <!-- Pages -->
+                        <li class="nav-item u-header__nav-item">
+                            <a class="nav-link u-header__nav-link" href="{% url 'webapp:about_us' %}">About Us</a>
+                        </li>
+                        <!-- End Pages -->
+                        
+                    </ul>
+                </div>
+                <!-- End Navigation -->
+
+
+
+                <div class="expert-bttn-section">
+                    <!-- login register mobile view -->
+                    <div v-if="isLogin" class="display-mobile-device dropdown-parent">
+                        <a href="javascript:;" class="d-flex align-items-center text-dark"  data-toggle="dropdown">
+                            <i class="flaticon-user mr-2 ml-1 font-size-18"></i>
+                            <span class="d-inline-block font-size-14 mr-1 text-bold">${user_name}</span>
+                        </a>
+
+                        <div class="dropDownItem" @click="$event.stopPropagation()">
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'webapp:profile' %}">Profile</a>
+                                <a class="dropdown-item" href="javascript:" @click="customerLogout">Logout</a>
+                            </div>
+                        </div>  
+                    
+                    </div>
+
+                    <div v-else class="display-mobile-device">
+                        <a class="login-style" href="{% url 'webapp:mobile_login' %}">Login</a>
+                    </div>
+                    
+                    <!-- login register mobile view -->
+                    <!-- expert button -->
+                    <!-- <a class="btn rounded-xs expert-bttn" href="javascript:">Be Our Host</a> -->
+                    <!-- end expert button -->
+                    <!-- Shopping Cart -->
+                    {% include 'frontEnd/html/cart/cart.html' %}
+                    <!-- End Shopping Cart -->
+                </div>
+                
+
+            </nav>
+            <!-- End Nav -->
+        </div>
+    </div>
+</header>
+<!-- vue js scripts start -->
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue.js' %}"></script>
+<script src="{% static 'frontEnd/assets/js/customjs/vuejs/vue-resources.js' %}"></script>
+<script type="text/javascript">
+    Vue.http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+</script>
+<script type="text/javascript">
+
+    new Vue({
+        el: '#header',
+        delimiters: ['${','}'],
+        data: {
+            name: null,
+            email: null,
+            mobile: null,
+            password: null,
+            gender: null,
+            nid_number: null,
+            date_of_birth: null,
+            country: null,
+            state: null,
+            city: null,
+            address: null,
+            login_mobile: null,
+            login_password: null,
+            userCartDetails: [],
+            session_id: "{{ request.session.session_id }}",
+            user_id: "{{ request.session.user_id }}",
+            user_name: "{{ request.session.user_name }}",
+            type: "{{ request.session.type }}",
+            time: "{{ request.session.time }}",
+            isLogin: "{{ request.session.isLogin }}",
+            totalCartItemCount: 0,
+            cssValue: 'block',
+        },
+        mounted: function() {
+            this.getUserCartDetails();
+            if(this.isLogin != ""){
+                this.isLogin = JSON.parse("{{ request.session.isLogin }}".toLowerCase());
+            }
+            // disable show cart icon from header when show cart details page show
+            var url = window.location.pathname;
+            if (url == '/show-cart/' || url == '/show-cart') {
+                this.cssValue = 'none';
+            }
+        },
+        computed: {
+            totalPrice: function(){
+                var sum = 0;
+                this.userCartDetails.cart_room_data.forEach(item => {
+                    sum += parseInt(item.room_details.price_details.offer_price);
+                });
+                return sum;
+            }
+        },
+        methods: {
+            getUserCartDetails: function(){
+
+                if (this.user_id != 0) {
+                    this.$http.get(`/api/user-cart-details/?u_id=${this.user_id}`)
+                    .then((resp) => {
+                        this.userCartDetails = resp.data.data;
+                        // get total cart item
+                        this.totalCartItemCount = resp.data.data['cart_room_data'].length + resp.data.data['cart_food_data'].length + resp.data.data['cart_facilities_data'].length + resp.data.data['cart_package_data'].length;
+                        if (!localStorage.getItem('cart_id')) {
+                            localStorage.setItem('cart_id', this.userCartDetails.cart_id);
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                } else {
+                    this.$http.get(`/api/user-cart-details/?session_id=${this.session_id}`)
+                    .then((resp) => {
+                        this.userCartDetails = resp.data.data;
+                        // get total cart item
+                        this.totalCartItemCount = resp.data.data['cart_room_data'].length + resp.data.data['cart_food_data'].length + resp.data.data['cart_facilities_data'].length + resp.data.data['cart_package_data'].length;
+                        if (!localStorage.getItem('cart_id')) {
+                            localStorage.setItem('cart_id', this.userCartDetails.cart_id);
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }
+
+            },
+            deleteCartRoom: function(room_cart_id){
+
+                if (this.user_id != 0) {
+                    this.$http.delete(`/api/user-cart-details/${room_cart_id}/?user_id=${this.user_id}`)
+                    .then((resp) => {
+                        this.getUserCartDetails();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }else{
+                    this.$http.delete(`/api/user-cart-details/${room_cart_id}/?session_id=${this.session_id}`)
+                    .then((resp) => {
+                        this.getUserCartDetails();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }
+                
+            },
+            customerRegistration: function(){
+                let form_data = new FormData();
+                form_data.append('name', this.name);
+                form_data.append('email', this.email);
+                form_data.append('mobile', this.mobile);
+                form_data.append('password', this.password);
+                this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                this.$http.post(`/user-register/`, form_data)
+                    .then((resp) => {
+                        this.user_id = resp.data.data.user_id;
+                        this.user_name = resp.data.data.user_name;
+                        this.type = resp.data.data.type;
+                        this.time = resp.data.data.time;
+                        this.isLogin = resp.data.data.isLogin;
+                        let data = {'user_id': `${resp.data.data.user_id}`, 'session_id': `${this.session_id}`};
+                        let js_cartDetails = JSON.stringify(data);
+                        this.updateUserCart(js_cartDetails);
+                        location.reload();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+
+            },
+            userLogin: function(){
+                let form_data = new FormData();
+                form_data.append('mobile', this.login_mobile);
+                form_data.append('password', this.login_password);
+                this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                this.$http.post(`/user-login/`, form_data)
+                    .then((resp) => {
+                        if (resp.data.data.isLogin == true) {
+                            this.user_id = resp.data.data.user_id;
+                            this.user_name = resp.data.data.user_name;
+                            this.type = resp.data.data.type;
+                            this.time = resp.data.data.time;
+                            this.isLogin = resp.data.data.isLogin;
+                        }else{
+                            iziToast.show({
+                                title: 'Oppps!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'red',
+                                message: 'Invalid credentials!',
+                                messageColor: 'black'
+                            });
+                        }
+                        
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            updateUserCart: function(js_cartDetails){
+                var cart_id = localStorage.getItem('cart_id');
+                this.$http.put(`/api/carts/${cart_id}/`, js_cartDetails)
+                    .then((resp) => {
+                        console.log("");
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                return true;
+            },
+
+            customerLogout: function(){
+                this.$http.post(`/user-logout/`)
+                    .then((resp) => {
+                        if (resp.data.data.success == true) {
+                            this.user_id = "";
+                            this.user_name = "";
+                            this.type = "";
+                            this.time = "";
+                            this.isLogin = false;
+                            location.reload();
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+
+        },
+        
+    });
+</script>
+<!-- vue js scripts end -->

@@ -1,0 +1,541 @@
+{% load static %}
+{% load hotel_info %}
+<!DOCTYPE html>
+<html lang="en"> 
+    <head>
+        <!-- Title -->
+        <title>{% block title %}{% endblock %}</title>
+
+        <!-- Required Meta Tags Always Come First -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Favicon -->
+        <link rel="shortcut icon" href="{% static 'frontEnd/assets/favicon.png' %}">
+
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,500,700,900&display=swap" rel="stylesheet">
+
+        <!-- CSS Implementing Plugins -->
+        <link href="{% static 'frontEnd/assets/favicon.png' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/css/font-mytravel.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/custombox/dist/custombox.min.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/animate.css/animate.min.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/hs-megamenu/src/hs.megamenu.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/flatpickr/dist/flatpickr.min.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/slick-carousel/slick/slick.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/dzsparallaxer/dzsparallaxer.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/ion-rangeslider/css/ion.rangeSlider.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/vendor/font-awesome/css/fontawesome-all.min.css' %}">
+        <link href="{% static 'frontEnd/assets/vendor/font-awesome/webfonts/fa-brands-400.woff2' %}">
+        <link href="{% static 'frontEnd/assets/vendor/font-awesome/webfonts/fa-solid-900.woff2' %}">
+        <!-- iziToast -->
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/izitoast/iziToast.min.css' %}">
+        <!-- CSS MyTravel Template -->
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/css/theme.css' %}">
+        <link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/global.css' %}">
+        {% block custom_css %}{% endblock %}
+    </head>
+    <body >
+        <div id="single_hotel" v-cloak>
+        <!-- ========== HEADER ========== -->
+        <header class="u-header u-header--dark-nav-links-xl u-header--show-hide-xl u-header--static-xl" data-header-fix-moment="500" data-header-fix-effect="slide">
+            <div class="u-header__section u-header__shadow-on-show-hide py-4 py-xl-0">
+                <!-- Topbar -->
+                <div class="container-fluid u-header__topbar u-header__topbar-lg border-bottom border-color-8">
+                    <div class="d-flex align-items-center">
+                        <ul class="list-inline list-inline-dark u-header__topbar-nav-divider--dark mb-0">
+                            <li class="list-inline-item mr-0">
+                                <span class="u-header__navbar-link">
+                                    <i class="fas fa-phone"></i>&nbsp;&nbsp;+880 1779224640</span>
+                            </li>
+                            <li class="list-inline-item mr-0">
+                                <span class="u-header__navbar-link"><i class="fas fa-envelope"></i>&nbsp;&nbsp;info@porzotok.com</span>
+                            </li>
+                        </ul>
+                        <div class="ml-auto d-flex align-items-center">
+                            <ul class="list-inline mb-0 mr-2 pr-1">
+                                <li class="list-inline-item">
+                                    <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://www.facebook.com/" target="_blank">
+                                        <span class="fab fa-facebook-f btn-icon__inner"></span>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://twitter.com/" target="_blank">
+                                        <span class="fab fa-twitter btn-icon__inner"></span>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://www.instagram.com/" target="_blank">
+                                        <span class="fab fa-instagram btn-icon__inner"></span>
+                                    </a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a class="btn btn-xs btn-icon btn-pill btn-soft-dark btn-bg-transparent transition-3d-hover btn-header-top" href="https://www.linkedin.com/" target="_blank">
+                                        <span class="fab fa-linkedin-in btn-icon__inner"></span>
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div v-if="isLogin">
+                                <a href="javascript:;" class="d-flex align-items-center text-dark"  data-toggle="dropdown">
+                                    <i class="flaticon-user mr-2 ml-1 font-size-18"></i>
+                                    <span class="d-inline-block font-size-14 mr-1 text-bold">${user_name}</span>
+                                </a>
+
+                                <div class="dropDownItem" @click="$event.stopPropagation()">
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="{% url 'webapp:profile' %}">Profile</a>
+                                        <a @click="customerLogout" class="dropdown-item" href="javascript:">Logout</a>
+                                    </div>
+                                </div>  
+                            </div>
+
+                            <div v-else class="position-relative px-3 u-header__login-form dropdown-connector-xl u-header__topbar-divider--dark">
+
+                                <a id="signUpDropdownInvoker"  href="javascript:;" class="d-flex align-items-center" aria-controls="signUpDropdown" aria-haspopup="true" aria-expanded="true" data-unfold-event="click" data-unfold-target="#signUpDropdown" data-unfold-type="css-animation" data-unfold-duration="300" data-unfold-delay="300" data-unfold-hide-on-scroll="true" data-unfold-animation-in="slideInUp" data-unfold-animation-out="fadeOut">
+                                    <span class="d-inline-block font-size-14 mr-1 h_login-style">Login</span>
+                                </a>
+
+                                <div id="signUpDropdown" class="dropdown-menu dropdown-unfold dropdown-menu-right py-0 mt-0" aria-labelledby="signUpDropdownInvoker" style="min-width: 500px;">
+                                    <div class="card rounded-xs">
+                                        <form class="js-validate" novalidate="novalidate" method="post">
+
+                                            <!-- Login -->
+                                            <div id="login" style="opacity: 1;" data-target-group="idForm" class="animated fadeIn">
+                                                <!-- Header -->
+                                                <div class="card-header text-center">
+                                                    <h3 class="h5 mb-0 font-weight-semi-bold">Login</h3>
+                                                </div>
+                                                <!-- End Header -->
+                                                <div class="card-body pt-6 pb-4">
+                                                    <!-- Form Group -->
+                                                    <div class="form-group pb-1">
+                                                        <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                            <label class="sr-only" for="login">Mobile</label>
+                                                            <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                <input v-model="login_mobile" type="text" class="form-control" name="mobile" id="login" placeholder="Mobile" aria-label="Mobile" aria-describedby="mobile" required="" data-msg="Please enter a valid mobile number." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                <div class="input-group-append" onautocomplete="off">
+                                                                    <span class="input-group-text" id="mobile">
+                                                                        <span class="fas fa-mobile-alt font-size-20"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Form Group -->
+                                                    <!-- Form Group -->
+                                                    <div class="form-group pb-1">
+                                                        <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                            <label class="sr-only" for="signinSrPassword">Password</label>
+                                                            <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                <input v-model="login_password" type="password" class="form-control" name="password" id="signinSrPassword" placeholder="Password" aria-label="Password" aria-describedby="signinPassword" required="" data-msg="Your password is invalid. Please try again." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                <div class="input-group-prepend">
+                                                                    <span class="input-group-text" id="signinPassword">
+                                                                        <span class="flaticon-password font-size-20"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Form Group -->
+                                                    <div class="mb-3 pb-1">
+                                                        <button @click.prevent="userLogin"  type="submit" class="btn btn-md btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Login</button>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between mb-1">
+                                                        <div class="custom-control custom-checkbox custom-control-inline">
+                                                            <input type="checkbox" id="customCheckboxInline1" name="customCheckboxInline1" class="custom-control-input">
+                                                            <label class="custom-control-label" for="customCheckboxInline1">Remember me</label>
+                                                        </div>
+                                                        <a class="js-animation-link text-black font-size-14" href="javascript:;" data-target="#forgotPassword" data-link-group="idForm" data-animation-in="fadeIn"><u>Forgot Password?</u></a>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="card-footer p-0">
+                                                    
+                                                    <div class="card-footer__bottom p-4 text-center font-size-14">
+                                                        <span class="text-gray-1">Don't have an account?</span>
+                                                        <a class="js-animation-link font-weight-bold text-logo-color" href="javascript:;" data-target="#signup" data-link-group="idForm" data-animation-in="fadeIn">Sign Up</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Login -->
+
+                                            <!-- Signup -->
+                                            <div id="signup" style="opacity: 0; display: none;" data-target-group="idForm">
+                                                <!-- Header -->
+                                                <div class="card-header text-center">
+                                                    <h3 class="h5 mb-0 font-weight-semi-bold">Register</h3>
+                                                </div>
+                                                <!-- End Header -->
+                                                <div class="card-body pt-5 pb-4">
+                                                    
+                                                    <div class="tab-content">
+                                                        <form>
+                                                        <div class="tab-pane fade active show" id="pills-one-code-sample" role="tabpanel" aria-labelledby="pills-one-code-sample-tab">
+                                                            <!-- Form Group -->
+                                                            <div class="form-group pb-1">
+                                                                <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                                    <label class="sr-only" for="name">Name</label>
+                                                                    <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                        <input v-model="name" type="text" class="form-control" name="name" id="name" placeholder="Full Name" aria-label="Full Name" aria-describedby="name" required="" data-msg="Please enter a valid name." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                        <div class="input-group-append">
+                                                                            <span class="input-group-text" id="name">
+                                                                                <span class="flaticon-user font-size-20"></span>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Form Group -->
+
+                                                            <!-- Form Group -->
+                                                            <div class="form-group pb-1">
+                                                                <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                                    <label class="sr-only" for="mobile">Mobile</label>
+                                                                    <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                        <input v-model="mobile" type="text" class="form-control" name="mobile" id="mobile" placeholder="Mobile Number" aria-label="Mobile" aria-describedby="mobile" required="" data-msg="Please enter a valid mobile number." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                        <div class="input-group-append">
+                                                                            <span class="input-group-text" id="mobile">
+                                                                                <span class="fas fa-mobile-alt font-size-20"></span>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Form Group -->
+
+                                                            <!-- Form Group -->
+                                                            <div class="form-group pb-1">
+                                                                <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                                    <label class="sr-only" for="signupSrEmail">Email</label>
+                                                                    <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                        <input v-model="email" type="email" class="form-control" name="email" id="signupSrEmail" placeholder="Email" aria-label="Email" aria-describedby="signupEmail" required="" data-msg="Please enter a valid email address." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                        <div class="input-group-append">
+                                                                            <span class="input-group-text" id="signupEmail">
+                                                                                <span class="far fa-envelope font-size-20"></span>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Form Group -->
+
+                                                            <!-- Form Group -->
+                                                            <div class="form-group pb-1">
+                                                                <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                                    <label class="sr-only" for="signupSrPassword">Password</label>
+                                                                    <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                        <input v-model="password" type="password" class="form-control" name="password" id="signupSrPassword" placeholder="Password" aria-label="Password" aria-describedby="signupPassword" required="" data-msg="Your password is invalid. Please try again." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text" id="signupPassword">
+                                                                                <span class="flaticon-password font-size-20"></span>
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- End Form Group -->
+                                                            
+                                                            <!-- <div class="d-flex justify-content-between mb-1">
+                                                                <div class="custom-control custom-checkbox custom-control-inline">
+                                                                    <input type="checkbox" id="customCheckboxInline2" name="customCheckboxInline2" class="custom-control-input">
+                                                                    <label class="custom-control-label" for="customCheckboxInline2">I have read and accept the <a href="#">Terms and Privacy Policy</a></label>
+                                                                </div>
+                                                            </div> -->
+
+                                                            <div class="mb-3 pb-1">
+                                                                <button @click.prevent="customerRegistration" type="submit" class="btn btn-md btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Register</button>
+                                                            </div>
+
+                                                        </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer p-0">
+                                                    
+
+                                                    <div class="card-footer__bottom p-4 text-center font-size-14">
+                                                        <span class="text-gray-1">Already have an account?</span>
+                                                        <a class="js-animation-link font-weight-bold text-logo-color" href="javascript:;" data-target="#login" data-link-group="idForm" data-animation-in="fadeIn">Login</a>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <!-- End Signup -->
+
+                                            <!-- Forgot Passwrd -->
+                                            <div id="forgotPassword" style="opacity: 0; display: none;" data-target-group="idForm">
+                                                <!-- Header -->
+                                                <div class="card-header bg-light text-center py-3 px-5">
+                                                    <h3 class="h6 mb-0 font-weight-semi-bold">Recover password</h3>
+                                                </div>
+                                                <!-- End Header -->
+                                                <div class="card-body px-10 py-5">
+                                                    <!-- Form Group -->
+                                                    <div class="form-group">
+                                                        <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                                            <label class="sr-only" for="recoverSrEmail">Your email</label>
+                                                            <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                                                <input type="email" class="form-control" name="email" id="recoverSrEmail" placeholder="Your email" aria-label="Your email" aria-describedby="recoverEmail" required="" data-msg="Please enter a valid email address." data-error-class="u-has-error" data-success-class="u-has-success">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text" id="recoverEmail">
+                                                                        <span class="far fa-envelope font-size-20"></span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Form Group -->
+                                                    <div class="mb-2">
+                                                        <button type="submit" class="btn btn-sm btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Recover Password</button>
+                                                    </div>
+                                                    <div class="text-center font-size-14">
+                                                        <span class="text-gray-1">Remember your password?</span>
+                                                        <a class="js-animation-link font-weight-bold" href="javascript:;" data-target="#login" data-link-group="idForm" data-animation-in="fadeIn">Log In</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- End Forgot Passwrd -->
+                                        </form>
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+                <!-- End Topbar -->
+                <div id="logoAndNav" class="container-fluid py-xl-2 border-bottom-xl">
+                    <!-- Nav -->
+                    <nav class="js-mega-menu navbar navbar-expand-xl u-header__navbar u-header__navbar--no-space">
+                        <!-- Logo -->
+                        <a href="{% url 'webapp:home' %}" aria-label="Porzotok" class="navbar-brand u-header__navbar-brand-default u-header__navbar-brand-center u-header__navbar-brand-text-dark-xl">
+                            <img src="{% static 'frontEnd/assets/img/logo/logo.png' %}" width="135px">
+                        </a>
+                        <!-- End Logo -->
+
+                        <!-- Responsive Toggle Button -->
+                        <button type="button" class="navbar-toggler btn u-hamburger u-hamburger--primary order-2 ml-3" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navBar" data-toggle="collapse" data-target="#navBar">
+                            <span id="hamburgerTrigger" class="u-hamburger__box">
+                                <span class="u-hamburger__inner"></span>
+                            </span>
+                        </button>
+                        <!-- End Responsive Toggle Button -->
+
+                        <!-- Navigation -->
+                        <div id="navBar" class="navbar-collapse u-header__navbar-collapse collapse order-2 order-xl-0 pt-4 p-xl-0 position-relative">
+                            <ul class="navbar-nav u-header__navbar-nav">
+                                <!-- Home -->
+                                <li class="nav-item u-header__nav-item">
+                                    <a class="nav-link u-header__nav-link u-header__nav-link-border" href="{% url 'webapp:home' %}">Home</a>
+                                </li>
+                                <!-- End Home -->
+
+                                <!-- Hotel -->
+                                <li class="nav-item u-header__nav-item" data-event="hover" data-animation-in="slideInUp" data-animation-out="fadeOut">
+                                    <a id="hotelMenu" class="nav-link u-header__nav-link u-header__nav-link-border" href="{% url 'webapp:hotel' %}">Hotel</a>
+                                </li>
+                                <!-- End Hotel -->
+
+                                <!-- Event -->
+                                <li class="nav-item u-header__nav-item">
+                                    <a id="tourMegaMenu" class="nav-link u-header__nav-link" href="javascript:;">Event</a>
+                                  <!-- End Tour - Mega Menu -->
+                                </li>
+                                <!-- End Event -->
+
+                                <!-- Rental -->
+                                <li class="nav-item hs-has-sub-menu u-header__nav-item" data-event="hover" data-animation-in="slideInUp" data-animation-out="fadeOut">
+                                    <a id="rentalMenu" class="nav-link u-header__nav-link u-header__nav-link-toggle u-header__nav-link-border" href="javascript:;" aria-haspopup="true" aria-expanded="false" aria-labelledby="rentalSubMenu">Services</a>
+                                    
+                                </li>
+                                <!-- End Rental -->
+
+                                <!-- Pages -->
+                                <li class="nav-item u-header__nav-item">
+                                    <a class="nav-link u-header__nav-link" href="{% url 'webapp:about_us' %}">About Us</a>
+                                </li>
+                                <!-- End Pages -->
+                                
+                            </ul>
+                        </div>
+                        <!-- End Navigation -->
+
+                        <div class="expert-bttn-section">
+                            <!-- login register mobile view -->
+                            <div v-if="isLogin" class="display-mobile-device dropdown-parent">
+                                <a href="javascript:;" class="d-flex align-items-center text-dark"  data-toggle="dropdown">
+                                    <i class="flaticon-user mr-2 ml-1 font-size-18"></i>
+                                    <span class="d-inline-block font-size-14 mr-1 text-bold">${user_name}</span>
+                                </a>
+
+                                <div class="dropDownItem" @click="$event.stopPropagation()">
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="{% url 'webapp:profile' %}">Profile</a>
+                                        <a class="dropdown-item" href="javascript:" @click="customerLogout">Logout</a>
+                                    </div>
+                                </div>  
+                            
+                            </div>
+
+                            <div v-else class="display-mobile-device">
+                                <a class="login-style" href="{% url 'webapp:mobile_login' %}">Login</a>
+                            </div>
+                            
+                            <!-- login register mobile view -->
+                            <!-- expert button -->
+                            <!-- end expert button -->
+                            <!-- Shopping Cart -->
+                            {% include 'frontEnd/html/cart/cart_single_page.html' %}
+                            <!-- End Shopping Cart -->
+                        </div>
+                    </nav>
+                    <!-- End Nav -->
+                </div>
+            </div>
+        </header>
+        <!-- ========== End HEADER ========== -->
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main id="content">
+            {% block main_content %}{% endblock %}
+        </main>
+        <!-- ========== END MAIN CONTENT ========== -->
+
+        <!-- ========== FOOTER ========== -->
+        {% include 'frontEnd/html/includes/footer.html' %}
+        <!-- ========== End FOOTER ========== -->
+
+        <!-- Page Preloader -->
+        <!-- <div id="jsPreloader" class="page-preloader">
+            <div class="page-preloader__content-centered">
+                <div class="spinner-grow text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div> -->
+        <!-- End Page Preloader -->
+
+        <!-- Go to Top -->
+        <a class="js-go-to u-go-to-modern" href="#" data-position='{"bottom": 15, "right": 15 }' data-type="fixed" data-offset-top="400" data-compensation="#header" data-show-effect="slideInUp" data-hide-effect="slideOutDown">
+            <i class="fas fa-arrow-up u-go-to-modern__inner"></i>
+        </a>
+        <!-- End Go to Top -->
+        </div>
+        <!-- JS Global Compulsory -->
+        <script src="{% static 'frontEnd/assets/vendor/jquery/dist/jquery.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/jquery-migrate/dist/jquery-migrate.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/popper.js/dist/umd/popper.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/bootstrap/bootstrap.min.js' %}"></script>
+
+        <!-- JS Implementing Plugins -->
+        <script src="{% static 'frontEnd/assets/vendor/hs-megamenu/src/hs.megamenu.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/jquery-validation/dist/jquery.validate.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/flatpickr/dist/flatpickr.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/slick-carousel/slick/slick.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/dzsparallaxer/dzsparallaxer.js' %}"></script>
+
+        <!-- JS MyTravel -->
+        <script src="{% static 'frontEnd/assets/js/hs.core.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.header.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.unfold.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.validation.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.show-animation.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.range-datepicker.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.selectpicker.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.range-slider.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/custombox/dist/custombox.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/vendor/custombox/dist/custombox.legacy.min.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.go-to.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.slick-carousel.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.quantity-counter.js' %}"></script>
+        <script src="{% static 'frontEnd/assets/js/components/hs.modal-window.js' %}"></script>
+        <!-- izitoast -->
+        <script src="{% static 'frontEnd/assets/izitoast/iziToast.min.js' %}"></script>
+
+        <!-- JS Plugins Init. -->
+        <script>
+            $(window).on('load', function () {
+                // initialization of HSMegaMenu component
+                $('.js-mega-menu').HSMegaMenu({
+                    event: 'hover',
+                    pageContainer: $('.container'),
+                    breakpoint: 1199.98,
+                    hideTimeOut: 0
+                });
+
+                // Page preloader
+                setTimeout(function() {
+                  $('#jsPreloader').fadeOut(500)
+                }, 800);
+            });
+
+            
+            $(document).on('ready', function () {
+                // initialization of header
+                $.HSCore.components.HSHeader.init($('#header'));
+
+                // initialization of google map
+                function initMap() {
+                    $.HSCore.components.HSGMap.init('.js-g-map');
+                }
+
+                // initialization of autonomous popups
+                $.HSCore.components.HSModalWindow.init('[data-modal-target]', '.js-modal-window', {
+                    autonomous: true
+                });
+                $.HSCore.components.HSModalWindow.init('[data-modal-target]', '.js-modal-window-facilities', {
+                    autonomous: true
+                });
+
+                // initialization of unfold component
+                $.HSCore.components.HSUnfold.init($('[data-unfold-target]'));
+
+                // initialization of show animations
+                $.HSCore.components.HSShowAnimation.init('.js-animation-link');
+
+                // initialization of datepicker
+                $.HSCore.components.HSRangeDatepicker.init('.js-range-datepicker');
+
+                // initialization of forms
+                $.HSCore.components.HSRangeSlider.init('.js-range-slider');
+
+                // initialization of malihu scrollbar
+                // $.HSCore.components.HSMalihuScrollBar.init($('.js-scrollbar'));
+
+                // initialization of select
+                $.HSCore.components.HSSelectPicker.init('.js-select');
+
+                // initialization of quantity counter
+                $.HSCore.components.HSQantityCounter.init('.js-quantity');
+
+                // initialization of slick carousel
+                $.HSCore.components.HSSlickCarousel.init('.js-slick-carousel');
+
+                // initialization of go to
+                $.HSCore.components.HSGoTo.init('.js-go-to');
+            });
+        </script>
+
+        <script type="text/javascript">
+            const currentLocation = location.href;
+            const menuItem = document.querySelectorAll('.u-header__nav-link');
+            const menuLength = menuItem.length;
+            for(let i = 0; i < menuLength; i++){
+                if(menuItem[i].href === currentLocation){
+                    menuItem[i].className = "nav-link u-header__nav-link u-header__nav-link-border activeClass";
+                }
+            }
+        </script>
+
+        {% block custom_js %}{% endblock %}
+    </body>
+</html>

@@ -1,0 +1,378 @@
+{% extends 'backEnd/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Room{% endblock  %}
+
+{% block custom_css %}
+    <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Room</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Rooms</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Room</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addRoom" id="addRoomForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="roomName">Room Name</label>
+                                <input type="text" class="form-control" v-model="room_name" id="roomName" placeholder="Enter Room Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="roomNumber">Room Number</label>
+                                <input type="text" class="form-control" v-model="room_no" id="roomNumber" placeholder="Enter Room Number">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelId">Hotel</label>
+                                <select v-model="hotel_id" id="hotelId" class="form-control">
+                                     <option v-for="hotel in allHotels" :value="hotel.hotel_id">${ hotel.hotel_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="floorNo">Floor</label>
+                                <select v-model="floor_id" id="floorNo" class="form-control">
+                                     <option v-for="floor in allFloors" :value="floor.floor_id">${ floor.floor_no }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="roomPrice">Price</label>
+                                <input type="number" class="form-control" v-model="price" id="roomPrice" placeholder="Enter Room Price">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="roomOfferPrice">Offer Price</label>
+                                <input type="number" class="form-control" v-model="offer_price" id="roomOfferPrice" placeholder="Enter Room Price">
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="priceEntryDate">Price Entry Date</label>
+                                <input type="date" class="form-control" v-model="price_entry_date" id="priceEntryDate">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="priceType">Price Type</label>
+                                <select v-model="price_type" id="priceType" class="form-control">
+                                    <option value="1">Room Price</option>
+                                    <option value="2">Food Price</option>
+                                    <option value="3">Facilites Price</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+
+
+                            <div class="form-group col-md-6">
+                                <label for="roomStatus">Room Status</label>
+                                <select v-model="room_status" id="roomStatus" class="form-control">
+                                    <option value="1">Book</option>
+                                    <option value="2">Available</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="roomDiscount">Room Discount</label>
+                                <input type="number" class="form-control" id="roomDiscount" placeholder="Enter Room Discount" v-model="hotel_discount_id">
+                            </div>
+                            
+                        </div>
+
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="roomImage">Room Image</label>
+                                <input @change="onFileChange" type="file" class="form-control" name="image" id="roomImage" multiple />
+                            </div>
+
+                            <!-- <div class="form-group col-md-6">
+                                <label for="roomDiscount">Room Discount</label>
+                                <input type="number" class="form-control" id="roomDiscount" placeholder="Enter Room Discount" v-model="hotel_discount_id">
+                            </div> -->
+                            
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="roomDescription">Room Description</label>
+                                <textarea class="form-control" id="roomDescription" placeholder="Enter Room Description" rows="6" v-model="room_description"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="n-chk">
+                            <label>
+                              <input v-model="is_active" type="checkbox" id="isActive" class="new-control-input" checked>
+                              <span>Is Active</span>
+                            </label>
+                        </div>
+                        
+                      <button type="submit" class="btn btn-primary mt-3">Add Room</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Room List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="table-responsive mb-4 mt-4">
+                    <table id="dataTableContent" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Hotel Name</th>
+                                <th>Room Name</th>
+                                <th>Room NO.</th>
+                                <th>Floor NO.</th>
+                                <th>Room Status</th>
+                                <th>Price</th>
+                                <th>Room Description</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-for="(room, index) in allRooms" :key="room.room_id">
+                                <td>${ index+1 }</td>
+                                <td>${ room.hotel_id.hotel_name }</td>
+                                <td>${ room.room_name }</td>
+                                <td>${ room.room_no }</td>
+                                <td>${ room.floor_id.floor_no }</td>
+                                <td>
+                                    ${ room.room_status }
+                                </td>
+                                <td>TK. ${ room.price_id.price }</td>
+                                <td>${ room.room_description }</td>
+                                <td>${ room.is_active }</td>
+
+                                <td class="text-center">
+                                    <a @click.prevent="editRoom(room.room_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a @click.prevent="deleteRoom(room.room_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>
+    <div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;">
+        <p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">${msg}</p>
+        <button class="action" style="color: rgb(37, 213, 228);">Dismiss</button>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allRooms : [],
+                allFloors : [],
+                allHotels : [],
+                room_name : null,
+                room_no : null,
+                price : null,
+                offer_price : null,
+                price_entry_date : null,
+                offer_price : null,
+                price_type : null,
+                hotel_id : null,
+                floor_id : null,
+                room_status : null,
+                room_description : null,
+                image : '',
+                hotel_discount_id : null,
+                is_active : null,
+                msg : '',
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+            },
+            mounted: function() {
+                this.getAllRooms();
+                this.getAllFloors();
+                this.getAllHotels();
+            },
+            methods: {
+                addRoom: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('room_name', this.room_name);
+                    form_data.append('room_no', this.room_no);
+                    form_data.append('hotel_id', this.hotel_id);
+                    form_data.append('floor_id', this.floor_id);
+                    form_data.append('price', this.price);
+                    form_data.append('offer_price', this.offer_price);
+                    form_data.append('price_entry_date', this.price_entry_date);
+                    form_data.append('price_type', this.price_type);
+                    form_data.append('room_status', this.room_status);
+                    form_data.append('hotel_discount_id', this.hotel_discount_id);
+                    form_data.append('room_description', this.room_description);
+                    form_data.append('is_active', this.is_active);
+
+                    for( var i = 0; i < this.image.length; i++ ){
+                      let file = this.image[i];
+                      form_data.append('image', file);
+                    }
+
+                    this.$http.post(`/api/room/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                // get all hotels
+                                this.getAllRooms();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getAllRooms: function() {
+                    this.$http.get(`/api/room/`)
+                        .then((resp) => {
+                            this.allRooms = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+                onFileChange(event) {
+                    this.image = event.target.files;
+                },
+
+                getAllFloors: function(){
+                    this.$http.get(`/api/floor/`)
+                      .then((resp) => {
+                        this.allFloors = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getAllHotels: function(){
+                    this.$http.get(`/api/hotel_details/`)
+                      .then((resp) => {
+                        this.allHotels = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

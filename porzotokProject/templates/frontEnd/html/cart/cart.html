@@ -1,0 +1,113 @@
+{% load static %}
+<div @click="$event.stopPropagation()" class="pl-2 pl-md-4 ml-auto shopping-cart" :style="{'display':cssValue}">
+    <a id="shoppingCartDropdownInvoker" class="btn-text-blackk py-4 position-relative" href="javascript:;" role="button" aria-controls="shoppingCartDropdown" aria-haspopup="true" aria-expanded="false" data-unfold-event="hover" data-unfold-target="#shoppingCartDropdown" data-unfold-type="css-animation" data-unfold-duration="300" data-unfold-delay="300" data-unfold-hide-on-scroll="true" data-unfold-animation-in="slideInUp" data-unfold-animation-out="fadeOut">
+        <span class="flaticon-shopping-basket font-size-custom text-primary-max-lg"></span>
+    </a>
+
+    <div id="shoppingCartDropdown" class="dropdown-menu dropdown-unfold dropdown-menu-right dropdown-menu-right-fix-wd-10 p-0 mt-0 w-max-sm-100 u-unfold--css-animation font-size-16" aria-labelledby="shoppingCartDropdownInvoker" style="width: 500px; animation-duration: 300ms; right: 0px;">
+        <div class="card">
+            <!-- Header -->
+            <div class="card-header border-color-8 py-3 px-5" v-if="userCartDetails.cart_room_data && userCartDetails.cart_room_data.length > 0">
+                <span class="font-weight-semi-bold" v-if="isNaN(totalCartItemCount) == false">Your Cart (${totalCartItemCount} Items)</span>
+                <span class="font-weight-semi-bold" v-else>Your Cart (0 Items)</span>
+            </div>
+            <!-- End Header -->
+
+            <!-- Body -->
+            <div class="card-body p-0">
+                <div class="px-2 px-md-3 py-2 py-md-1 border-bottom border-color-8" v-for="(userRoomCart,index) in userCartDetails['cart_room_data']">
+
+                    <div v-if="index == 0" class="media p-2 p-md-3" style="padding: 10px 0 0 0 !important;">
+                        
+                        <div class="u-avatar u-lg-avatar-md mr-2 mr-md-3">
+                            <img class="img-fluid rounded-pill" :src="userRoomCart.room_details.image_url[0].Image" :alt="userRoomCart.room_details.room_name">
+                        </div>
+                        <div class="media-body position-relative pl-md-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2 mb-md-3">
+                                <span class="d-block text-dark font-weight-bold">${userRoomCart.room_details.room_name}</span>
+                                <a href="javascript:" @click="deleteCartRoom(userRoomCart.room_cart_details_id)" class="close close-rounded position-md-absolute right-0 ml-2" aria-label="Close">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                            <span class="d-block text-gray-1">Price: ${userRoomCart.room_details.price_details.offer_price} TK </span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="px-2 px-md-3 py-2 py-md-1 border-bottom border-color-8" v-for="(userFoodCart,index) in userCartDetails['cart_food_data']">
+                    <div v-if="index == 0" class="media p-2 p-md-3" style="padding: 10px 0 0 0 !important;">
+                        
+                        <div class="u-avatar u-lg-avatar-md mr-2 mr-md-3">
+                            <img class="img-fluid rounded-pill" :src="userFoodCart.food_details.food_image" :alt="userFoodCart.food_details.food_name">
+                        </div>
+                        <div class="media-body position-relative pl-md-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2 mb-md-3">
+                                <span class="d-block text-dark font-weight-bold">${userFoodCart.food_details.food_name}</span>
+                                <button type="button" class="close close-rounded position-md-absolute right-0 ml-2" aria-label="Close">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <span class="d-block text-gray-1">Price: ${userFoodCart.food_details.price_details.offer_price} TK </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-2 px-md-3 py-2 py-md-1 border-bottom border-color-8" v-for="(userPackageCart,index) in userCartDetails['cart_package_data']">
+                    <div v-if="index == 0" class="media p-2 p-md-3" style="padding: 10px 0 0 0 !important;">
+                        
+                        <div class="u-avatar u-lg-avatar-md mr-2 mr-md-3">
+                            <img class="img-fluid rounded-pill" :src="userPackageCart.package_details.package_image" :alt="userPackageCart.package_details.package_name">
+                        </div>
+                        <div class="media-body position-relative pl-md-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2 mb-md-3">
+                                <span class="d-block text-dark font-weight-bold">${userPackageCart.package_details.package_name}</span>
+                                <button type="button" class="close close-rounded position-md-absolute right-0 ml-2" aria-label="Close">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <span class="d-block text-gray-1">Price: ${userPackageCart.package_details.price_details.offer_price} TK </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-2 px-md-3 py-2 py-md-1 border-bottom border-color-8" v-for="(userFacilitiesCart,index) in userCartDetails['cart_facilities_data']">
+                    <div v-if="index == 0" class="media p-2 p-md-3" style="padding: 10px 0 0 0 !important;">
+                        
+                        <div class="u-avatar u-lg-avatar-md mr-2 mr-md-3">
+                            <img class="img-fluid rounded-pill" src="{% static 'frontEnd/assets/img/facilities/hotel-facilities.jpg' %}" :alt="userFacilitiesCart.hotel_facilities_details.facilites_name">
+                        </div>
+                        <div class="media-body position-relative pl-md-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2 mb-md-3">
+                                <span class="d-block text-dark font-weight-bold">${userFacilitiesCart.hotel_facilities_details.facilites_details.facilites_name}</span>
+                                <button type="button" class="close close-rounded position-md-absolute right-0 ml-2" aria-label="Close">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <span class="d-block text-gray-1">Price: ${userFacilitiesCart.hotel_facilities_details.price_details.offer_price} TK </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- End Body -->
+
+            <!-- Footer -->
+            <div class="card-footer border-0 p-3 px-md-5 py-md-4" style="padding-top: 8px !important;">
+                <div class="mb-2 pb-md-1">
+                    <span class="d-block font-weight-semi-bold" v-if="userCartDetails.cart_room_data && userCartDetails.cart_room_data.length > 0">Subtotal: ${totalPrice} TK</span>
+                </div>
+                <div class="d-md-flex button-inline-group-md mb-1" v-if="userCartDetails.cart_room_data && userCartDetails.cart_room_data.length > 0">
+                    <a class="btn btn-block btn-md btn-gray-1 rounded-xs font-weight-bold transition-3d-hover" href="{% url 'webapp:show_cart' %}">
+                        View cart
+                    </a>
+                    <a class="btn btn-block btn-md btn-blue-1 rounded-xs font-weight-bold transition-3d-hover mt-md-0 ml-md-5" href="{% url 'webapp:checkout' %}">
+                        Check Out
+                    </a>
+                </div>
+                <div v-else>Your cart is empty</div>
+            </div>
+            <!-- End Footer -->
+        </div>
+    </div>
+</div>

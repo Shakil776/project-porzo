@@ -1,0 +1,206 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Register{% endblock  %}
+
+{% block custom_css %}
+    <link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/login.css' %}">
+{% endblock %}
+
+{% block main_content %} 
+<div id="register-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+                <div class="login-section">
+                    
+                    <form class="js-validate" novalidate="novalidate" method="post">
+                        <!-- Login -->
+                        <div class="card">
+                            <!-- Header -->
+                            <div class="card-header text-center">
+                                <h3 class="h5 mb-0 font-weight-semi-bold">Register</h3>
+                            </div>
+                            <!-- End Header -->
+                            <div class="card-body pt-6 pb-4">
+
+                                <!-- Form Group -->
+                                <div class="form-group pb-1">
+                                    <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                        <label class="sr-only" for="name">Name</label>
+                                        <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                            <input v-model="name" type="text" class="form-control" name="name" placeholder="Full Name" aria-label="Full Name" aria-describedby="name" required="" data-msg="Please enter a valid name." data-error-class="u-has-error" data-success-class="u-has-success">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">
+                                                    <span class="flaticon-user font-size-20"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Form Group -->
+
+                                <!-- Form Group -->
+                                <div class="form-group pb-1">
+                                    <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                        <label class="sr-only" for="mobile">Mobile</label>
+                                        <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                            <input v-model="mobile" type="text" class="form-control" name="mobile"  placeholder="Mobile Number" aria-label="Mobile" aria-describedby="mobile" required="" data-msg="Please enter a valid mobile number." data-error-class="u-has-error" data-success-class="u-has-success">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">
+                                                    <span class="fas fa-mobile-alt font-size-20"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Form Group -->
+
+                                <!-- Form Group -->
+                                <div class="form-group pb-1">
+                                    <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                        <label class="sr-only" for="signupSrEmail">Email</label>
+                                        <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                            <input v-model="email" type="email" class="form-control" name="email" placeholder="Email" aria-label="Email" aria-describedby="signupEmail" required="" data-msg="Please enter a valid email address." data-error-class="u-has-error" data-success-class="u-has-success">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">
+                                                    <span class="far fa-envelope font-size-20"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Form Group -->
+
+                                <!-- Form Group -->
+                                <div class="form-group pb-1">
+                                    <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                        <label class="sr-only" for="signupSrPassword">Password</label>
+                                        <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                            <input v-model="password" type="password" class="form-control" name="password" placeholder="Password" aria-label="Password" aria-describedby="signupPassword" required="" data-msg="Your password is invalid. Please try again." data-error-class="u-has-error" data-success-class="u-has-success">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <span class="flaticon-password font-size-20"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Form Group -->
+                                
+                                <div class="mb-3 pb-1">
+                                    <button @click.prevent="customerRegistration"  type="submit" class="btn btn-md btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Register</button>
+                                </div>
+                                
+                            </div>
+                            
+                            <div class="card-footer p-0">
+                                
+                                <div class="card-footer__bottom p-4 text-center font-size-14">
+                                    <span class="text-gray-1">Already have an account?</span>
+                                    <a class="font-weight-bold text-logo-color" href="{% url 'webapp:mobile_login' %}">Login</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Login -->
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<!-- vue js scripts start -->
+<script type="text/javascript">
+
+    new Vue({
+        el: '#register-section',
+        delimiters: ['${','}'],
+        data: {
+            name: '',
+            email: '',
+            mobile: '',
+            password: '',
+            session_id: "{{ request.session.session_id }}",
+            user_id: "{{ request.session.user_id }}",
+            user_name: "{{ request.session.user_name }}",
+            type: "{{ request.session.type }}",
+            time: "{{ request.session.time }}",
+            isLogin: "{{ request.session.isLogin }}",
+        },
+        mounted: function() {
+            if(this.isLogin != ""){
+                this.isLogin = JSON.parse("{{ request.session.isLogin }}".toLowerCase());
+            }
+        },
+
+        methods: {
+            customerRegistration: function(){
+                let form_data = new FormData();
+                form_data.append('name', this.name);
+                form_data.append('email', this.email);
+                form_data.append('mobile', this.mobile);
+                form_data.append('password', this.password);
+                this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                this.$http.post(`/user-register/`, form_data)
+                    .then((resp) => {
+                        if(resp.data.data.isLogin === true){
+                            this.user_id = resp.data.data.user_id;
+                            this.user_name = resp.data.data.user_name;
+                            this.type = resp.data.data.type;
+                            this.time = resp.data.data.time;
+                            this.isLogin = resp.data.data.isLogin;
+                            // update user cart 
+                            // let data = {'user_id': `${resp.data.data.user_id}`, 'session_id': `${this.session_id}`};
+                            // let js_cartDetails = JSON.stringify(data);
+                            // this.updateUserCart(js_cartDetails);
+                            // redirect home page
+                            window.location.href = '/';
+                            // show toast message
+                            iziToast.show({
+                                title: 'Success!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'green',
+                                message: 'Registration Completed Successfully.',
+                                messageColor: 'black'
+                            });
+                        }else{
+                            // show toast message
+                            iziToast.show({
+                                title: 'Opps!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'red',
+                                message: 'Something is missing. Please try again.',
+                                messageColor: 'black'
+                            });
+                        }
+
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+            // updateUserCart: function(js_cartDetails){
+            //     var cart_id = localStorage.getItem('cart_id');
+            //     if (cart_id != 0) {
+            //         this.$http.put(`/api/carts/${cart_id}/`, js_cartDetails)
+            //             .then((resp) => {
+            //                 console.log("");
+            //             })
+            //             .catch((err) => {
+            //                 console.log(err);
+            //             })
+            //         return true;
+            //     }
+            // },
+        },
+        
+    });
+</script>
+<!-- vue js scripts end -->
+{% endblock %}

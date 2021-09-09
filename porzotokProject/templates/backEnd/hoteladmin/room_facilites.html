@@ -1,0 +1,219 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Room Facilities{% endblock  %}
+
+
+{% block custom_css %}
+<style type="text/css">
+    .form-check-label { margin-bottom: 0; font-weight: 600;}
+    ul.checkbox { margin: 0; padding: 0; margin-left: 20px; list-style: none; } 
+    ul.checkbox li input { margin-right: .25em; } 
+    ul.checkbox li { border: 1px transparent solid; display:inline-block; width:12em; } 
+</style>
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Room Facilities</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Room Facilities</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Facilities Room</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addFacilitesGroup" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-5">
+                                <label>Facilities</label>
+                                <div class="form-check">
+                                    <input @click="selectAllFacilities()" v-model="allSelectedFacilities" class="form-check-input" type="checkbox" id="checkAllFacility">
+                                    <label class="form-check-label" for="checkAllFacility">Select All</label>
+                                </div>
+
+                                <ul class="checkbox"> 
+                                    <li v-for='facility in facilites'>
+                                        <input type='checkbox' :value='facility.facilites_id' v-model='facilites_id' @click="selectFacilities" :id='facility.facilites_id'> 
+                                        <label :for='facility.facilites_id'>${ facility.facilites_name }</label>
+                                    </li>
+                                </ul> 
+
+                            </div>
+                            <!-- <div class="form-group col-md-6">
+                                <label for="roomId">Room</label>
+                                <select v-model="room_id" name="room_id[]" class="form-control" id="roomId" multiple>
+                                     <option v-for="room in allRooms" :value="room.room_id">${ room.room_name }</option>
+                                </select>
+                            </div> -->
+                            <div class="form-group col-md-7">
+                                <label>Rooms</label>
+                                <div class="form-check">
+                                    <input @click="selectAllRoom()" v-model="allSelectedRoom" class="form-check-input" type="checkbox" id="checkAllRoom">
+                                    <label class="form-check-label" for="checkAllRoom">Select All</label>
+                                </div>
+
+                                <ul class="checkbox"> 
+                                    <li v-for='room in allRooms'>
+                                        <input type='checkbox' :value="room.room_id" v-model='room_id' @click="selectRoom" :id='room.room_id'> 
+                                        <label :for='room.room_id'>${ room.room_name }</label>
+                                    </li>
+                                </ul> 
+                            </div>
+
+                        </div>
+
+                      <button type="submit" class="btn btn-primary mt-3">Add Room Facilities</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                facilites : [],
+                allRooms : [],
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                logged_user_id: {{ request.session.uid }},
+                facilites_id : [],
+                room_id : [],
+                allSelectedFacilities: false,
+                allSelectedRoom: false,
+            },
+            mounted: function() {
+                this.getFacilites();
+                this.getRooms();
+            },
+            methods: {
+                addFacilitesGroup: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('facilites_id', this.facilites_id);
+                    form_data.append('room_id', this.room_id);
+                    form_data.append('hotel_owner_id', this.logged_user_id);
+
+                    this.$http.post(`/admin-api/room-facilites/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.data.error == false) {
+                                
+                                // clear all form field after successfully insert data
+                                this.allSelectedFacilities = false;
+                                this.allSelectedRoom = false;
+                                this.facilites_id = [];
+                                this.room_id = [];
+
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Room Facilities Added Successfully.',
+                                    messageColor: 'black'
+                                });
+                            }
+                            else {
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Opppps!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong. Please try again.',
+                                    messageColor: 'black'
+                                });
+
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                getFacilites() {
+                    this.$http.get(`/admin-api/room-facilites`)
+                        .then((resp) => {
+                            this.facilites = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                getRooms(){
+                    this.$http.get(`/admin-api/get-hotel-room-facilities-room/?user_id=${this.logged_user_id}`)
+                      .then((resp) => {
+                        this.allRooms = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                selectAllFacilities(){
+                    this.facilites_id = [];
+                    this.allSelectedFacilities = !this.allSelectedFacilities;
+                    if (this.allSelectedFacilities) {
+                        for (facility in this.facilites) {
+                            this.facilites_id.push(this.facilites[facility].facilites_id);
+                        }
+                    }
+                },
+                selectFacilities(){
+                    this.allSelectedFacilities = false;
+                },
+                selectAllRoom(){
+                    this.room_id = [];
+                    this.allSelectedRoom = !this.allSelectedRoom;
+                    if (this.allSelectedRoom) {
+                        for (room in this.allRooms) {
+                            this.room_id.push(this.allRooms[room].room_id);
+                        }
+                    }
+                },
+                selectRoom(){
+                    this.allSelectedRoom = false;
+                },
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+{% endblock %}

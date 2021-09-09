@@ -1,0 +1,270 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok | Booking Confirm{% endblock  %}
+
+{% block custom_css %}
+<style>
+.border-logo{
+    border-color: #C20035 !important;
+    border: 1px solid #C20035 !important;
+}
+.bg-logo{
+    background: #C20035 !important;
+}
+</style>
+{% endblock  %}
+
+{% block main_content %}
+<!-- ========== MAIN CONTENT ========== -->
+<main id="booking" class="bg-gray space-2" v-cloak>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-xl-8">
+
+                <div class="mb-5 shadow-soft bg-white rounded-sm">
+                    <div class="py-3 px-4 px-xl-12 border-bottom">
+                        <ul class="list-group flex-nowrap overflow-auto overflow-md-visble list-group-horizontal list-group-borderless flex-center-between pt-1">
+                            <li class="list-group-item text-center flex-shrink-0 flex-xl-shrink-1">
+                                <div class="flex-content-center mb-3 width-40 height-40 border  border-width-2 border-logo bg-logo text-white mx-auto rounded-circle">
+                                    1
+                                </div>
+                                <div class="text-logo-color">Customer information</div>
+                            </li>
+                            <li class="list-group-item text-center flex-shrink-0 flex-xl-shrink-1">
+                                <div class="flex-content-center mb-3 width-40 height-40 border  border-width-2 border-logo bg-logo text-white mx-auto rounded-circle">
+                                    2
+                                </div>
+                                <div class="text-logo-color">Payment information</div>
+                            </li>
+                            <li class="list-group-item text-center flex-shrink-0 flex-md-shrink-1">
+                                <div class="flex-content-center mb-3 width-40 height-40 border-width-2 border border-logo bg-logo text-white mx-auto rounded-circle">
+                                    3
+                                </div>
+                                <div class="text-logo-color">Booking is confirmed!</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="py-6 px-5 border-bottom">
+                        <div class="flex-horizontal-center">
+                            <div class="height-50 width-50 flex-shrink-0 flex-content-center bg-logo rounded-circle">
+                                <i class="flaticon-tick text-white font-size-24"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="font-size-18 font-weight-bold text-dark mb-0 text-lh-sm">
+                                    Thank You. Your Booking Order is Confirmed Now.
+                                </h3>
+                                <p class="mb-0">A confirmation email has been sent to your provided email address.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-4 pb-5 px-5 border-bottom">
+                        <h5 id="scroll-description" class="font-size-21 font-weight-bold text-dark mb-2">
+                            Traveler Information
+                        </h5>
+                        <!-- Fact List -->
+                        <ul class="list-unstyled font-size-1 mb-0 font-size-16">
+                            <li class="d-flex justify-content-between py-2">
+                                <span class="font-weight-medium">Booking number</span>
+                                <span class="text-secondary text-right">PORZOTOK{{booking_details.booking_id}}</span>
+                            </li>
+
+                            <li class="d-flex justify-content-between py-2">
+                                <span class="font-weight-medium">Name</span>
+                                <span class="text-secondary text-right">{{booking_details.user_id.user_name}}</span>
+                            </li>
+
+                            <li class="d-flex justify-content-between py-2">
+                                <span class="font-weight-medium">E-mail address</span>
+                                <span class="text-secondary text-right">{{booking_details.user_id.user_email}}</span>
+                            </li>
+
+                            <li class="d-flex justify-content-between py-2">
+                                <span class="font-weight-medium">Mobile Number</span>
+                                <span class="text-secondary text-right">{{booking_details.user_id.user_phone}}</span>
+                            </li>
+
+                            <li class="d-flex justify-content-between py-2">
+                                <span class="font-weight-medium">Street Address</span>
+                                <span class="text-secondary text-right">{{booking_details.user_id.user_short_address}}</span>
+                            </li>
+
+                            <li class="d-flex justify-content-between py-2">
+                                <span class="font-weight-medium">Town / City</span>
+                                <span class="text-secondary text-right">{{booking_details.user_id.city_id.city_name}}</span>
+                            </li>
+
+                            <li class="d-flex justify-content-between py-2">
+                                <span class="font-weight-medium">Country</span>
+                                <span class="text-secondary text-right">{{booking_details.user_id.city_id.state_id.country_id.country_name}}</span>
+                            </li>
+                        </ul>
+                        <!-- End Fact List -->
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-xl-4">
+                <div class="shadow-soft bg-white rounded-sm">
+
+                    <!-- Basics Accordion -->
+                    <div id="basicsAccordion" >
+                        <!-- Card -->
+                        <div class="card rounded-0 border-top-0 border-left-0 border-right-0">
+                            <div class="card-header card-collapse bg-transparent border-0" id="basicsHeadingOne">
+                                <h5 class="mb-0">
+                                    <button type="button" class="btn btn-link border-0 btn-block d-flex justify-content-between card-btn py-3 px-4 font-size-17 font-weight-bold text-dark"
+                                        data-toggle="collapse"
+                                        data-target="#basicsCollapseOne"
+                                        aria-expanded="true"
+                                        aria-controls="basicsCollapseOne">
+                                        Booking Details
+
+                                        <span class="card-btn-arrow font-size-14 text-dark">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </span>
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="basicsCollapseOne" class="collapse show"
+                                aria-labelledby="basicsHeadingOne"
+                                data-parent="#basicsAccordion">
+
+                                <div class="card-body px-4 pt-0" style="border-bottom: 1px solid #ddd">
+
+                                    <!-- Fact List -->
+                                    {% for room in room_booking_details %}
+                                    <ul class="list-unstyled font-size-1 mb-0 font-size-16">
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Room Name:</span>  
+                                            <span class="text-secondary">{{room.room_id.room_name}}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Room Number:</span> 
+                                            <span class="text-secondary">{{room.room_id.room_no}}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Room Price:</span> 
+                                            <span class="text-secondary">{{ room.static_offer_price }} TK</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Total Day:</span> 
+                                            <span class="text-secondary">{{ room.total_day }}</span>
+                                        </li>
+
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Check In Date:</span> <span class="text-secondary">{{room.check_in_date}}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Check Out Date:</span> <span class="text-secondary">{{room.check_out_date}}</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Duration:</span>
+                                            {% if room.total_day %}
+                                                <span class="text-secondary">{{ room.total_day }} Days</span>
+                                            {% else %}
+                                                <span class="text-secondary">0 Days</span>
+                                            {% endif %}
+                                        </li>
+                                    </ul>
+                                    {% endfor %}
+                                    <!-- End Fact List -->
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- End Card -->
+
+                        <!-- Card -->
+                        <div class="card rounded-0 border-top-0 border-left-0 border-right-0">
+                            <div class="card-header card-collapse bg-transparent border-0" id="basicsHeadingFour">
+                                <h5 class="mb-0">
+                                    <button type="button" class="btn btn-link border-0 btn-block d-flex justify-content-between card-btn py-3 px-4 font-size-17 font-weight-bold text-dark"
+                                        data-toggle="collapse"
+                                        data-target="#basicsCollapseFour"
+                                        aria-expanded="false"
+                                        aria-controls="basicsCollapseFour">
+                                        Payment
+
+                                        <span class="card-btn-arrow font-size-14 text-dark">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </span>
+                                    </button>
+                                </h5>
+                            </div>
+                            <div id="basicsCollapseFour" class="collapse show"
+                                aria-labelledby="basicsHeadingFour"
+                                data-parent="#basicsAccordion">
+                                <div class="card-body px-4 pt-0">
+                                    <!-- Fact List -->
+                                    <ul class="list-unstyled font-size-1 mb-0 font-size-16">
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Room Price</span>
+                                            <span class="text-secondary">{{booking_details.total_amount}} TK</span>
+                                        </li>
+
+                                        <li class="d-flex justify-content-between py-2">
+                                            <span class="font-weight-medium">Subtotal</span>
+                                            <span class="text-secondary">{{booking_details.total_amount}} TK</span>
+                                        </li>
+                                        <li class="d-flex justify-content-between py-2 font-size-17 font-weight-bold">
+                                            <span class="font-weight-bold">Total Amount</span>
+                                            <span class="text-secondary" >{{booking_details.total_amount}}TK</span>
+                                        </li>
+                                    </ul>
+                                    <!-- End Fact List -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Card -->
+                    </div>
+                    <!-- End Basics Accordion -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+
+        <!-- ========== END MAIN CONTENT ========== -->
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#booking',
+            delimiters: ['${','}'],
+            data: {
+                tax: 0,
+            },
+            mounted: function() {
+                localStorage.removeItem('cart_id');
+            },
+            methods: {
+                calculateTotalDay: function(s_date, end_date){
+                    if (s_date != "" && end_date != "") {
+                        var start_date = new Date(s_date);
+                        var end_date = new Date(end_date);
+                        var diff = end_date.getDate() - start_date.getDate();
+                        return diff;
+                    }else{
+                        return 0;
+                    }
+                },
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->    
+
+{% endblock %}

@@ -1,0 +1,384 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Room List{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Room List</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Room List</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing" >
+
+           <div id="" class="col-lg-12 layout-spacing">
+            <div v-if="click_event" class="statbox widget box box-shadow" :style="'display:'+ hide_or_vis +';'">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Edit Room</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+                    <form @submit.prevent="updateRoom(update_val.room_id)">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="RoomListUpdate">Room Name</label>
+                                <input v-if="update_bool" type="text" class="form-control" id="RoomListUpdate" :value="update_val.room_name" placeholder="Enter Room Name" required="">  
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="RoomNOUpdate">Room No</label>
+                                <input v-if="update_bool" type="text" class="form-control" id="RoomNOUpdate" :value="update_val.room_no" placeholder="Enter Room No" required="">  
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="inputFloor">Floor No</label>
+                                <select v-model="floor" name="floor" id="inputFloor" class="form-control">
+                                    <option v-for="floor in allFloors" :value="floor.floor_id">${ floor.floor_no }</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="roomPriceUpdate">Price</label>
+                                <input v-if="update_bool" type="text" class="form-control" id="roomPriceUpdate" :value="update_val.price.price" placeholder="Enter Room Price" required="">  
+                            </div>
+                        </div>
+                        <div class="form-row">
+
+                            <div class="form-group col-md-6">
+                                <label for="roomOfferPriceUpdate">Offer Price</label>
+                                <input v-if="update_bool" type="text" class="form-control" id="roomOfferPriceUpdate" :value="update_val.price.offer_price" placeholder="Enter Room Offer Price" required="">  
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="priceEntryDateUpdate">Price Entry Date</label>
+                                <input v-if="update_bool" type="date" class="form-control" id="priceEntryDateUpdate" :value="update_val.price.price_entry_date" placeholder="">  
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+
+                            <div class="form-group col-md-12">
+                                <label for="hotelDiscount">Hotel Discount</label>
+                                <select v-model="discount" name="discount" id="hotelDiscount" class="form-control">
+                                    <option v-for="discount in allHotelDiscounts" :value="discount.hotel_discount_id">${discount.hotel_discount_name}</option>
+                                </select>
+                            </div>
+
+
+                            <div class="n-chk">
+                                <label>
+                                  <input v-if="update_bool" :value="update_val.is_active" type="checkbox" id="isActive_u" class="new-control-input is_active" name="is_active" checked>
+                                  <span>Is Active</span>
+                                </label>
+                            </div>
+
+                        </div>
+
+                      <button type="submit" class="btn btn-primary mt-3">Update Room</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- table start -->
+    <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+        <h4 class="d-inline">Room List</h4>
+
+        <div class="widget-content widget-content-area br-6 mt-4">
+            <div class="row">
+                <div class="col-sm-4">
+                    Show
+                    <select v-model="perPage" @change="handlePageSizeChange($event)">
+                        <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                    </select>
+                    entries
+                </div>
+            
+                <div class="col-sm-4 offset-sm-4">
+                  <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Search" v-model="searchKey"  @keyup="getSearchData" />
+                  </div>
+                </div>
+            </div>
+            
+
+            <div class="table-responsive mb-4 mt-4">
+
+                <table class="table" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <!-- <th>Hotel Name</th> -->
+                            <th>Room Name</th>
+                            <th>Room NO.</th>
+                            <th>Floor NO.</th>
+                            <th>Room Status</th>
+                            <th>Price</th>
+                            <th>Offer Price</th>
+                            <th>Discount Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr v-if="allRooms.length" v-for="(rooms, index) in allRooms" :key="rooms.room_id">
+                            <td>${ index+1 }</td>
+                            <!-- <td>${ rooms.hotel_details.hotel_name }</td> -->
+                            <td>${ rooms.room_name }</td>
+                            <td>${ rooms.room_no }</td>
+                            <td>${ rooms.floor_details.floor_no }</td>
+                            <td v-if="rooms.room_status == 1">
+                                Booked
+                            </td>
+                            <td v-else-if="rooms.room_status == 2">
+                                Available 
+                            </td>
+                            <td>TK. ${ rooms.price_details.price }</td>
+                            <td>TK. ${ rooms.price_details.offer_price }</td>
+                            <td>${ rooms.hotel_discount_details.hotel_discount_name }</td>
+                            <td>${ rooms.hotel_discount_details.start_time_date }</td>
+                            <td>${ rooms.hotel_discount_details.end_time_date }</td>
+                            <td v-if="rooms.is_active">Active</td>
+                            <td class="text-center">
+                                <a @click.prevent="editRoomList(rooms.room_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                &nbsp;
+                                <a @click.prevent="deleteRoom(rooms.room_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                            </td>
+                        </tr>
+
+                        <tr v-show="!allRooms.length" class="text-center"><td colspan="8">No Data</td></tr>
+
+                        
+                    </tbody>
+                    
+                </table>
+
+                 <div v-if="allRooms.length">
+                    <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last"></b-pagination>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- table end -->
+
+{% endblock %}
+
+{% block custom_js %}
+
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allRooms : [],
+                allFloors: [],
+                allHotelDiscounts: [],
+                msg : '',
+                error: '',
+                update_val : [],
+                click_event : false,
+                update_bool : false,
+                floor: 0,
+                discount: 0,
+                update_price_id:0,
+                logged_user_id: {{ request.session.uid }},
+                hide_or_vis : "none",
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+                searchKey: null,
+            },
+            mounted: function() {
+                this.getAllRooms();
+                this.getAllFloors();
+                this.getAllHotelDiscounts();
+            },
+            methods: {
+                async getAllRooms() {
+                    await this.$http.get(`/admin-api/room-list/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allRooms = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllRooms();
+                },
+                async getSearchData() {
+                    if (this.searchKey != null && this.logged_user_id != null) {
+                        const result = await this.$http.get(`/admin-api/room-search/?user_id=${this.logged_user_id}&key=${this.searchKey}`);
+                        if (result.data.error === false) {
+                            this.allRooms = result.data.data;
+                            this.totalItems = result.data.count;
+                        }
+                    } 
+                },
+
+                editRoomList: function(rid){
+                    this.click_event = true;
+                    this.hide_or_vis = "block";
+                    // back to top when edit
+                    // window.scrollTo(0,0);
+                    let scrollingElement = (document.scrollingElement || document.body);
+                    $(scrollingElement).animate({
+                        scrollTop: 0
+                    }, 500);
+                    // send request
+                    this.$http.get(`/admin-api/add-room-hotel-admin/${rid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.update_bool = true;
+                                this.update_val = resp.data.data;
+                                this.floor = resp.data.data.floor_id;
+                                this.update_price_id = resp.data.data.price_id;
+
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                updateRoom: function(rid){
+                    let form_data = new FormData();
+                    let price_form_data = new FormData();
+                    price_form_data.append('price', document.getElementById('roomPriceUpdate').value);
+                    price_form_data.append('offer_price', document.getElementById('roomOfferPriceUpdate').value);
+                    price_form_data.append('price_entry_date', document.getElementById('priceEntryDateUpdate').value);
+                    
+                    this.$http.put(`/admin-api/add-price/${this.update_price_id}/`, price_form_data)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                setInterval(function(){ 
+                                    error = false;
+                                 }, 3000);
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                    form_data.append('room_name', document.getElementById('RoomListUpdate').value);
+                    form_data.append('room_no', document.getElementById('RoomNOUpdate').value);
+                    form_data.append('floor_id', document.getElementById('inputFloor').value);
+                    form_data.append('hotel_discount_id', document.getElementById('hotelDiscount').value);
+                    form_data.append('is_active', document.querySelector('.is_active').checked);
+                    form_data.append('price_id', this.update_price_id);
+
+                    this.$http.put(`/admin-api/add-room-hotel-admin/${rid}/`, form_data)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.click_event = false;
+                                this.msg = resp.data.message;
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'green',
+                                    message: 'Room Updated Successfully.',
+                                    messageColor: 'black'
+                                });
+                                this.getAllRooms();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                deleteRoom: function(rid){
+
+                    swal({
+                      title: 'Are you sure?',
+                      text: "You won't be able to revert this!",
+                      type: 'warning',
+                      showCancelButton: true,
+                      confirmButtonText: 'Delete',
+                      padding: '2em'
+                    }).then((result) => {
+                      if (result.value){
+
+                        this.$http.delete(`/admin-api/add-room-hotel-admin/${rid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Room Deleted Successfully',
+                                    messageColor: 'black'
+                                });
+                                this.getAllRooms();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+
+                      }
+                    });
+                },
+                getAllFloors: function(){
+                    this.$http.get(`/api/floor/`)
+                      .then((resp) => {
+                        this.allFloors = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getAllHotelDiscounts: function() {
+                    this.$http.get(`/admin-api/discount-list/?user_id=${this.logged_user_id}`)
+                        .then((resp) => {
+                            this.allHotelDiscounts = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+            },
+             watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllRooms();
+                  }
+                }
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

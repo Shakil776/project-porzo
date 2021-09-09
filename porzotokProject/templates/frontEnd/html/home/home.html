@@ -1,0 +1,557 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok{% endblock  %}
+
+{% block custom_css %}
+    <link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/home.css' %}">
+{% endblock %}
+
+{% block main_content %} 
+<div id="app">
+<!-- ========== HERO ========== -->
+<div class="hero-block hero-v4 bg-img-hero-bottom z-index-2" style="background-image: url({% static 'frontEnd/assets/img/1920x800/Img1.jpg' %}); padding: 110px 0px;">
+    <div class="container space-2 ">
+        <div class="row">
+            <!-- Search  -->
+            <div class="col-md-8 offset-md-2">
+                <form method="post" action="" @submit.prevent="searchForm">
+                    <input type="text" name="search" id="search" class="form-control searchBox" v-model="searchKey" value="" @keyup="getSearchData" placeholder="Search your ideal Hotel" autocomplete="off">
+                </form>
+                
+                <div class="row" id="searchResultshow" v-cloak>
+                    <div class="col-md-12" style="position: absolute; z-index: 1;">
+                        <div class="list-group searchResultHover">
+                            <a v-for="city in cityData" :href="`{% url 'webapp:search' %}?q=${city.city_name}`" class="list-group-item" @click="showHotelNameInSearchBox(city.city_name);"><span class="iconColor"><i class="fas fa-map-marker-alt"></i></span> ${city.city_name}<i class="iconColor float-right">city</i> </a>
+                            <a v-for="match in searchData" :href="`{% url 'webapp:search' %}?q=${match.hotel_name}`" class="list-group-item" @click="showHotelNameInSearchBox(match.hotel_name);">
+                            <span class="iconColor"><i class="fas fa-hotel"></i>&nbsp;</span>${match.hotel_name}<i class="iconColor float-right">hotel</i>   
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Search  -->
+
+            <!-- Info -->
+            <div class="mb-wd-11 pb-5 py-lg-5 text-center" style="position: relative; top: 60px;">
+                <h1 class="font-size-50 font-size-xs-30 text-white font-weight-bold">LET’S DISCOVER BANGLADESH TOGETHER & FIND YOUR IDEAL HOTEL.</h1>
+            </div>
+            <!-- End Info -->
+        </div>
+        
+    </div>
+</div>
+<!-- ========== END HERO ========== -->
+
+<!--Start Twenty Four Hours Deals Porzotok -->
+<!-- <div class="w-md-80 w-lg-50 text-center mx-md-auto pb-4 mt-xl-4">
+    <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">24 Hours Deals</h2>
+</div> -->
+<!--Banner v3-->
+<!-- <div class="banner-block banner-v3 dzsparallaxer auto-init height-is-based-on-content use-loading mode-scroll" data-options='{direction: "normal"}'>
+    
+    <div class="divimage dzsparallaxer--target bg-img-hero" style="height: 130%; background-image: url({% static 'frontEnd/assets/img/1920x500/oner.png' %});"></div>
+    <div class="text-center space-3">
+        <div class="pt-xl-2 pb-xl-5 mb-xl-1">
+            <h6 class="text-gray-4 font-size-30 font-weight-bold mb-1 opacity-6">Enjoy Twenty Four Hours Deals</h6>
+            <h5 class="text-white font-size-40 font-weight-bold mb-5 pb-xl-1">Up to 80% Discount!</h5>
+            <a class="btn btn-outline-white border-width-2 min-width-200 font-weight-normal transition-3d-hover" href="{% url 'webapp:twenty-four-deals' %}">View more</a>
+        </div>
+    </div>
+</div> -->
+<!--End Twenty Four Hours Deals Porzotok -->
+
+<!-- Twenty Four Hours Deals carousel -->
+<div class="product-card-block product-card-v3">
+    <div class="container-fluid space-top-2">
+        <div class="w-md-80 w-lg-50 text-center mx-md-auto pb-4 mt-xl-4">
+            <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">24 Hour Deal Hotels</h2>
+        </div>
+        <div class="js-slick-carousel u-slick u-slick--equal-height u-slick--gutters-3"
+            data-slides-show="5"
+            data-slides-scroll="4"
+            data-arrows-classes="d-none d-lg-inline-block u-slick__arrow-classic v1 u-slick__arrow-classic--v1 u-slick__arrow-centered--y rounded-circle"
+            data-arrow-left-classes="fas fa-chevron-left u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left shadow-5"
+            data-arrow-right-classes="fas fa-chevron-right u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right shadow-5"
+            data-pagi-classes="text-center u-slick__pagination mt-4"
+            data-responsive='[{
+            "breakpoint": 1025,
+            "settings": {
+            "slidesToShow": 3
+            }
+            }, {
+            "breakpoint": 992,
+            "settings": {
+            "slidesToShow": 2
+            }
+            }, {
+            "breakpoint": 768,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }, {
+            "breakpoint": 554,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }]'>
+            {% for t_hotel in twenty_deals %}
+            <div class="js-slide mt-2">
+                <div class="card transition-3d-hover shadow-hover-2 h-100 w-100 borrder">
+                    <div class="position-relative">
+                        <a href="hotel/{{t_hotel.hotel_id.slug_name}}" class="d-block gradient-overlay-half-bg-gradient-v5">
+                            <img class="card-img-top" src="/media/{{ t_hotel.hotel_id.image_galary_details_id.image_galary_details_id | hotel_image }}" alt="{{t_hotel.hotel_id.hotel_name}}" style="max-height: 130px;">
+                        </a>
+                        <div class="position-absolute top-0 right-0">
+                          <button type="button" class="btn-off" data-toggle="tooltip" data-placement="top" title="" data-original-title="Up to 80% Discount">
+                            <span class="font-size-20">80%</span>
+                          </button>
+                        </div>
+
+                        <div class="position-absolute bottom-0 left-0 right-0">
+                            <div class="px-4 pb-3">
+                                <a href="hotel/{{t_hotel.hotel_id.slug_name}}" class="d-block">
+                                    <div class="d-flex align-items-center font-size-14 text-white">
+                                        <i class="icon flaticon-placeholder mr-2 font-size-20"></i> {{t_hotel.hotel_id.city_id.city_name}}, {{t_hotel.hotel_id.city_id.state_id.country_id.country_name}}
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body card-padd">
+                        <div class="mb-2">
+                            <div class="d-inline-flex align-items-center font-size-13 text-lh-1 text-primary letter-spacing-3">
+                                <div class="green-lighter">
+                                    {% with rating=t_hotel.hotel_id.hotel_id|average_rating_count %} 
+                                        {% for i in 1|range:6 %}
+                                            {% if i <= rating %}
+                                                <small class="fas fa-star ac-color"></small>
+                                            {% else %}
+                                                <small class="fas fa-star"></small>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        <a href="hotel/{{t_hotel.hotel_id.slug_name}}" class="card-title font-size-17 font-weight-medium text-dark">{{t_hotel.hotel_id.hotel_name}}</a>
+                        <div class="mt-2 mb-3">
+                            <span class="badge badge-pill badge-primary py-1 px-2 font-size-14 border-radius-3 font-weight-normal">{{t_hotel.hotel_id.hotel_id|average_rating_count}}/5</span>
+                            <span class="font-size-14 text-gray-1 ml-2">({{t_hotel.hotel_id.hotel_id|total_review_count}} reviews)</span>
+                        </div>
+                        <div class="mb-0">
+                            <span class="mr-1 font-size-14 text-gray-1">From</span>
+                            <span class="font-weight-bold">TK. {{t_hotel.hotel_id|hotel_min_price }}</span>
+                            <span class="font-size-14 text-gray-1"> / night</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- End Twenty Four Hours Deals carousel -->
+
+<!-- Recommended Hotels -->
+<div class="product-card-block product-card-v3">
+    <div class="container-fluid pt-2">
+        <div class="w-md-80 w-lg-50 text-center mx-md-auto pb-4 mt-xl-4">
+            <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Recommended Hotels</h2>
+        </div>
+        <div class="js-slick-carousel u-slick u-slick--equal-height u-slick--gutters-3"
+            data-slides-show="5"
+            data-slides-scroll="4"
+            data-arrows-classes="d-none d-lg-inline-block u-slick__arrow-classic v1 u-slick__arrow-classic--v1 u-slick__arrow-centered--y rounded-circle"
+            data-arrow-left-classes="fas fa-chevron-left u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left shadow-5"
+            data-arrow-right-classes="fas fa-chevron-right u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right shadow-5"
+            data-pagi-classes="text-center u-slick__pagination mt-4"
+            data-responsive='[{
+            "breakpoint": 1025,
+            "settings": {
+            "slidesToShow": 3
+            }
+            }, {
+            "breakpoint": 992,
+            "settings": {
+            "slidesToShow": 2
+            }
+            }, {
+            "breakpoint": 768,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }, {
+            "breakpoint": 554,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }]'>
+            {% for hotel in recommendedHotels %}
+            <div class="js-slide mt-2">
+                <div class="card transition-3d-hover shadow-hover-2 h-100 w-100 borrder">
+                    <div class="position-relative">
+                        <a href="hotel/{{hotel.slug_name}}" class="d-block gradient-overlay-half-bg-gradient-v5">
+                            <img class="card-img-top" src="/media/{{ hotel.image_galary_details_id.image_galary_details_id | hotel_image }}" alt="{{hotel.hotel_name}}" style="max-height: 130px;">
+                        </a>
+                        <!-- <div class="position-absolute top-0 right-0 pt-3 pr-3">
+                          <button type="button" class="btn btn-sm btn-icon text-white rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                            <span class="flaticon-heart-1 font-size-20"></span>
+                          </button>
+                        </div> -->
+                        <div class="position-absolute bottom-0 left-0 right-0">
+                            <div class="px-4 pb-3">
+                                <a href="hotel/{{hotel.slug_name | hotel_name_slug}}" class="d-block">
+                                    <div class="d-flex align-items-center font-size-14 text-white">
+                                        <i class="icon flaticon-placeholder mr-2 font-size-20"></i> {{hotel.city_id.city_name}}, {{hotel.city_id.state_id.country_id.country_name}}
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body card-padd">
+                        <div class="mb-2">
+                            <div class="d-inline-flex align-items-center font-size-13 text-lh-1 text-primary letter-spacing-3">
+                                <div class="green-lighter">
+                                    {% with rating=hotel.hotel_id|average_rating_count %} 
+                                        {% for i in 1|range:6 %}
+                                            {% if i <= rating %}
+                                                <small class="fas fa-star ac-color"></small>
+                                            {% else %}
+                                                <small class="fas fa-star"></small>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        <a href="hotel/{{hotel.slug_name | hotel_name_slug}}" class="card-title font-size-17 font-weight-medium text-dark">{{hotel.hotel_name}}</a>
+                        <div class="mt-2 mb-3">
+                            <span class="badge badge-pill badge-primary py-1 px-2 font-size-14 border-radius-3 font-weight-normal">{{hotel.hotel_id|average_rating_count}}/5</span>
+                            <span class="font-size-14 text-gray-1 ml-2">({{hotel.hotel_id|total_review_count}} reviews)</span>
+                        </div>
+                        <div class="mb-0">
+                            <span class="mr-1 font-size-14 text-gray-1">From</span>
+                            <span class="font-weight-bold">{{hotel.hotel_id|hotel_min_price }} TK</span>
+                            <span class="font-size-14 text-gray-1"> / night</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- End Recommended Hotels -->
+
+<!-- popular Destinantion -->
+<div class="destination-block destination-v4">
+    <div class="container space-bottom-1 pt-3">
+        <div class="w-md-80 w-lg-50 text-center mx-md-auto mb-5 mt-3">
+            <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Popular Destination</h2>
+        </div>
+            <div class="row">
+           
+            {% for value in touristspots %}
+            {% if forloop.first %}
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <!-- <a href="/city-info/{{ value.city_id.city_slug_name }}"> -->
+                        <div class="min-height-350 bg-img-hero rounded-border p-5 gradient-overlay-half-bg-gradient transition-3d-hover shadow-hover-2" style="background-image: url(/media/{{ value.image_galary_details_id.image_galary_details_id | hotel_image }});">
+                            <header class="w-100 d-flex justify-content-between mb-3">
+                                <div>
+                                    <div class="destination pb-3 text-lh-1">
+                                        <a href="/city-info/{{ value.city_id.city_slug_name }}" class="text-white font-weight-bold font-size-21">{{value.city_id.city_name}}</a>
+                                    </div>
+                                </div>
+                            </header>
+                        </div>
+                    <!-- </a> -->
+                </div>
+            {% elif forloop.last %}
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="min-height-350 bg-img-hero rounded-border p-5 gradient-overlay-half-bg-gradient transition-3d-hover shadow-hover-2" style="background-image: url(/media/{{ value.image_galary_details_id.image_galary_details_id | hotel_image }});">
+                        <header class="w-100 d-flex justify-content-between mb-3">
+                            <div>
+                                <div class="destination pb-3 text-lh-1">
+                                    <a href="/city-info/{{ value.city_id.city_slug_name }}" class="text-white font-weight-bold font-size-21">{{value.city_id.city_name}}</a>
+                                </div>
+                                <!-- <div class="mt-1 pt-1">
+                                    <a href="#" class="text-white">79 Hotel</a>
+                                </div>
+                                <div class="mt-1 pt-1">
+                                    <a href="#" class="text-white">79 spot</a>
+                                </div> -->
+                            </div>
+                        </header>
+                    </div>
+                </div>
+            {% else %}
+            <div class="col-md-6 col-xl-3 mb-3 mb-md-4 pb-1">
+                <div class="min-height-350 bg-img-hero rounded-border p-5 gradient-overlay-half-bg-gradient transition-3d-hover shadow-hover-2" style="background-image: url(/media/{{ value.image_galary_details_id.image_galary_details_id | hotel_image }});">
+                    <header class="w-100 d-flex justify-content-between mb-3">
+                        <div>
+                            <div class="destination pb-3 text-lh-1">
+                                <a href="/city-info/{{ value.city_id.city_slug_name }}" class="text-white font-weight-bold font-size-21">{{value.city_id.city_name}}</a>
+                            </div>
+                            <!-- <div class="mt-1 pt-1">
+                                <a href="#" class="text-white">79 Hotel</a>
+                            </div>
+                            <div class="mt-1 pt-1">
+                                <a href="#" class="text-white">79 spot</a>
+                            </div> -->
+                        </div>
+                    </header>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            
+        </div>
+    </div>
+</div>
+<!-- End popular End Destinantion -->
+
+<!-- Most popular hotels -->
+<div class="product-card-block product-card-v3">
+    <div class="container-fluid space-top-2">
+        <div class="w-md-80 w-lg-50 text-center mx-md-auto pb-4 mt-xl-4">
+            <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Most Popular Hotels</h2>
+        </div>
+        <div class="js-slick-carousel u-slick u-slick--equal-height u-slick--gutters-3"
+            data-slides-show="5"
+            data-slides-scroll="4"
+            data-arrows-classes="d-none d-lg-inline-block u-slick__arrow-classic v1 u-slick__arrow-classic--v1 u-slick__arrow-centered--y rounded-circle"
+            data-arrow-left-classes="fas fa-chevron-left u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left shadow-5"
+            data-arrow-right-classes="fas fa-chevron-right u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right shadow-5"
+            data-pagi-classes="text-center u-slick__pagination mt-4"
+            data-responsive='[{
+            "breakpoint": 1025,
+            "settings": {
+            "slidesToShow": 3
+            }
+            }, {
+            "breakpoint": 992,
+            "settings": {
+            "slidesToShow": 2
+            }
+            }, {
+            "breakpoint": 768,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }, {
+            "breakpoint": 554,
+            "settings": {
+            "slidesToShow": 1
+            }
+            }]'>
+            {% for hotel in hotels %}
+            <div class="js-slide mt-2">
+                <div class="card transition-3d-hover shadow-hover-2 h-100 w-100 borrder">
+                    <div class="position-relative">
+                        <a href="hotel/{{hotel.slug_name | hotel_name_slug}}" class="d-block gradient-overlay-half-bg-gradient-v5">
+                            <img class="card-img-top" src="/media/{{ hotel.image_galary_details_id.image_galary_details_id | hotel_image }}" alt="{{hotel.hotel_name}}" style="max-height: 130px;">
+                        </a>
+                        <!-- <div class="position-absolute top-0 right-0 pt-3 pr-3">
+                          <button type="button" class="btn btn-sm btn-icon text-white rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                            <span class="flaticon-heart-1 font-size-20"></span>
+                          </button>
+                        </div> -->
+                        <div class="position-absolute bottom-0 left-0 right-0">
+                            <div class="px-4 pb-3">
+                                <a href="hotel/{{hotel.slug_name | hotel_name_slug}}" class="d-block">
+                                    <div class="d-flex align-items-center font-size-14 text-white">
+                                        <i class="icon flaticon-placeholder mr-2 font-size-20"></i> {{hotel.city_id.city_name}}, {{hotel.city_id.state_id.country_id.country_name}}
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body card-padd">
+                        <div class="mb-2">
+                            <div class="d-inline-flex align-items-center font-size-13 text-lh-1 text-primary letter-spacing-3">
+                                <div class="green-lighter">
+                                    {% with rating=hotel.hotel_id|average_rating_count %} 
+                                        {% for i in 1|range:6 %}
+                                            {% if i <= rating %}
+                                                <small class="fas fa-star ac-color"></small>
+                                            {% else %}
+                                                <small class="fas fa-star"></small>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        <a href="hotel/{{hotel.slug_name | hotel_name_slug}}" class="card-title font-size-17 font-weight-medium text-dark">{{hotel.hotel_name}}</a>
+                        <div class="mt-2 mb-3">
+                            <span class="badge badge-pill badge-primary py-1 px-2 font-size-14 border-radius-3 font-weight-normal">{{hotel.hotel_id|average_rating_count}}/5</span>
+                            <span class="font-size-14 text-gray-1 ml-2">({{hotel.hotel_id|total_review_count}} reviews)</span>
+                        </div>
+                        <div class="mb-0">
+                            <span class="mr-1 font-size-14 text-gray-1">From</span>
+                            <span class="font-weight-bold">{{hotel.hotel_id|hotel_min_price }} TK</span>
+                            <span class="font-size-14 text-gray-1"> / night</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- End Most popular hotels -->
+
+
+<!-- Tabs v3 -->
+<!-- <div class="tabs-block tabs-v3">
+    <div class="container space-top-1 pb-3 mb-1">
+        <div class="w-md-80 w-lg-50 text-center mx-md-auto my-3">
+            <h2 class="section-title text-black font-size-30 font-weight-bold mb-0">Recommended Hotels</h2>
+        </div>
+        
+        <ul class="nav tab-nav-line flex-nowrap pb-4 tab-nav justify-content-lg-center text-nowrap" role="tablist">
+            {% for city in citys %}
+            <li class="nav-item">
+                <a class="nav-link font-weight-medium" id="{{ city | space_remove }}-tab" data-toggle="pill" href="#{{ city | space_remove }}" role="tab" aria-controls="{{ city | space_remove }}" aria-selected="true">
+                    <div class="d-flex flex-column flex-md-row  position-relative text-dark align-items-center">
+                        <span class="tabtext font-weight-semi-bold">{{ city }}</span>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        
+        <div class="tab-content">
+            {% for city in citys %}
+                
+                {% if citys.0 == city %}
+                    <div class="tab-pane fade active show" id="{{ city | space_remove  }}" role="tabpanel" aria-labelledby="{{ city | space_remove  }}-tab">
+                {% else %}
+                    <div class="tab-pane fade" id="{{ city | space_remove  }}" role="tabpanel" aria-labelledby="{{ city | space_remove  }}-tab">
+                {% endif %}
+
+                    
+                    <div class="row">
+                        {% for each in citys_by_hotel %}
+                        {% if each.city == city %}
+                        <div class="col-md-6 col-lg-4 col-xl-3 mb-3 mb-md-4 pb-1">
+                            <div class="card transition-3d-hover shadow-hover-2 tab-card h-100">
+                                <div class="position-relative">
+                                    <a href="/hotel/{{each.slug}}" class="d-block gradient-overlay-half-bg-gradient-v5">
+                                        <img class="card-img-top" src="{{each.image.0}}" alt="{{each.hotel_name}}" style="max-height: 140px;" >
+                                    </a>
+                                    <div class="position-absolute top-0 right-0 pt-3 pr-3">
+                                      <button type="button" class="btn btn-sm btn-icon text-white rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                                        <span class="flaticon-valentine-heart"></span>
+                                      </button>
+                                    </div>
+                                    <div class="position-absolute bottom-0 left-0 right-0 pb-3">
+                                        <div class="col">
+                                            <a href="/hotel/{{each.slug}}" class="d-block">
+                                                <div class="d-flex align-items-center font-size-14 text-white">
+                                                    <i class="icon flaticon-pin-1 mr-2 font-size-20"></i> {{each.city}},{{each.state}}, {{each.country}}
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body card-padd">
+                                    <div class="mb-2">
+                                        <div class="d-inline-flex align-items-center font-size-13 text-lh-1 text-primary letter-spacing-3">
+                                            <div class="green-lighter">
+                                            {% with rating=each.hotel_id.hotel_id|average_rating_count %} 
+                                                {% for i in 1|range:6 %}
+                                                    {% if i <= rating %}
+                                                        <small class="fas fa-star ac-color"></small>
+                                                    {% else %}
+                                                        <small class="fas fa-star"></small>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endwith %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="/hotel/{{each.slug}}" class="card-title font-size-17 font-weight-medium text-dark">{{each.hotel_name}}</a>
+                                    <div class="mt-2 mb-3">
+
+                                        <span class="badge badge-pill badge-primary py-1 px-2 font-size-14 border-radius-3 font-weight-normal">{{each.hotel_id.hotel_id|average_rating_count}}/5</span>
+                                        <span class="font-size-14 text-gray-1 ml-2">({{each.hotel_id.hotel_id|total_review_count}} reviews)</span>
+                                    </div>
+                                    <div class="mb-0">
+                                        <span class="mr-1 font-size-14 text-gray-1">From</span>
+                                        <span class="font-weight-bold">{{each.hotel_id|hotel_min_price}} TK</span>
+                                        <span class="font-size-14 text-gray-1"> / night</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div> -->
+<!-- End Tabs v3 -->
+
+<!-- Icon Block v1 -->
+{% include 'frontEnd/html/includes/why_choose.html' %}
+<!-- End Icon Block v1 -->
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<!-- vue js scripts start -->
+<script type="text/javascript">
+
+    new Vue({
+        el: '#app',
+        delimiters: ['${','}'],
+        data: {
+            searchKey: '',
+            searchData: [],
+            cityData: [],
+        },
+
+        methods: {
+
+            getSearchData: function(){
+                
+                if(this.searchKey != ""){
+                    this.$http.get(`/api/search/?q=${this.searchKey}`)
+                    .then((resp) => {
+                        this.searchData = resp.data.data;
+                        this.cityData = resp.data.cities;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+                }else{
+                    this.searchData = [];
+                    this.cityData = [];
+                }
+            },
+            searchForm: function(){
+                if(this.searchKey != ""){
+                    window.location.href = `/search/?q=${this.searchKey}`;
+                }
+            },
+            showHotelNameInSearchBox: function(input_value){
+                var name = document.getElementById('search');
+                name.value = input_value;
+                this.searchKey = input_value;
+                name.focus();
+            },
+
+        },
+        
+    });
+</script>
+<!-- vue js scripts end -->
+{% endblock %}

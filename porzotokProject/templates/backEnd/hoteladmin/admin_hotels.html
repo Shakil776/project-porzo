@@ -1,0 +1,587 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Hotel Admin{% endblock  %}
+
+{% block custom_css %}
+    <!-- scrollspyNav css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/scrollspyNav.css' %}">
+    <!-- breadcrumb css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/miscellaneous.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/assets/css/elements/breadcrumb.css' %}">
+    <!-- data table -->
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'backEnd/plugins/table/datatable/dt-global_style.css' %}">
+    <!-- toast -->
+    <link href="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END PAGE LEVEL PLUGINS -->
+{% endblock %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Hotel</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Hotels</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div id="addRoomForm" class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4 v-if="click_event">Update Hotel</h4>
+                            <h4 v-else>Add Hotel</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+                    <form v-if="click_event" @submit.prevent="updateHotel(update_val.hotel_id)" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" id="gallery_id" :value="update_val.image_galary_details_id">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelName">Hotel Name</label>
+                                <input v-if="update_bool" :value="update_val.hotel_name" type="text" class="form-control" id="updateHotelName_u" placeholder="Enter Hotel Name">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="hotelRegNo">Hotel Registration Number</label>
+                                <input v-if="update_bool" :value="update_val.hotel_reg_no" type="text" class="form-control" id="hotelRegNo_u" placeholder="Enter Hotel Registration Number">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelEmail">Hotel Email</label>
+                                <input v-if="update_bool" :value="update_val.hotel_email" type="text" class="form-control" id="hotelEmail_u" placeholder="Enter Hotel Email">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="hotelPhone">Hotel Phone</label>
+                                <input v-if="update_bool" :value="update_val.hotel_phone" type="text" class="form-control" id="hotelPhone_u" placeholder="Enter Hotel Phone Number">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelMap">Map</label>
+                                <textarea v-if="update_bool" :value="update_val.Map" class="form-control" id="hotelMap_u" placeholder="Hotel Map" rows="6"></textarea>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="shortAddress">Short Address</label>
+                                <textarea v-if="update_bool" :value="update_val.short_address" class="form-control" name="short_address" id="shortAddress_u" placeholder="Enter Hotel Short Address" rows="6"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputCountry">Country</label>
+                                <select v-model="h_country_id" name="country" id="inputCountry" class="form-control" @change="getStateByCountry()">
+                                     <option v-for="country in allCountries" :value="country.country_id">${ country.country_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputState">State</label>
+                                <select v-model="h_state_id" name="state" id="inputState" class="form-control" @change="getCityByState()">
+                                    <option v-for="state in allStateList" :value="state.state_id">${ state.state_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">City</label>
+                                <select v-model="h_city_id" id="inputCity_u" name="city_id" class="form-control">
+                                    <option v-for="city in allCityList" :value="city.city_id">${ city.city_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <!-- <div class="form-group col-md-6">
+                                <label for="hotelsImage">Hotel Image</label>
+                                <input @change="onFileChange" ref="hotelImage" type="file" class="form-control" name="h_image" id="hotelsImage" multiple />
+                            </div> -->
+                            
+                            <div class="form-group col-md-6">
+                                <label for="hotelType">Hotel Type</label>
+                                <select id="hotelType_u" name="hotel_type" class="form-control">
+                                    <option value="">Select</option>
+                                    <option value="1">1 STAR</option>
+                                    <option value="2">2 STAR</option>
+                                    <option value="3">3 STAR</option>
+                                    <option value="4">4 STAR</option>
+                                    <option value="5">5 STAR</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelUserId">Hotel User</label>
+                                <input v-if="update_bool" :value="update_val.hotel_user_id" type="number" class="form-control" name="hotel_user_id" id="hotelUserId_u" placeholder="Enter Hotel User">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="hotelDiscount">Hotel Discount</label>
+                                <input v-if="update_bool" :value="update_val.hotel_discount_id.hotel_discount_id" type="number" class="form-control" name="hotel_discount_id" id="hotelDiscount_u" placeholder="Enter Hotel Discount" >
+                            </div>
+                        </div>
+
+                        <div class="n-chk">
+                            <label>
+                              <input v-if="update_bool" :value="update_val.is_active" type="checkbox" id="isActive_u" class="new-control-input is_active" name="is_active" checked>
+                              <span>Is Active</span>
+                            </label>
+                        </div>
+                        
+                      <button type="submit" class="btn btn-primary mt-3">Update Hotel</button>
+                    </form>
+
+                    <!-- add hotel -->
+                    <form v-else @submit.prevent="addHotel" id="addHotelForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelName">Hotel Name</label>
+                                <input type="text" class="form-control" v-model="h_name" id="hotelName" placeholder="Enter Hotel Name">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="hotelRegNo">Hotel Registration Number</label>
+                                <input type="text" class="form-control" v-model="h_reg_no" id="hotelRegNo" placeholder="Enter Hotel Registration Number">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="slugName">Slug Name</label>
+                                <input type="text" class="form-control" v-model="h_slug" id="slugName" placeholder="enter-slug-name">
+                            </div>
+                            <div class="form-group col-md-12">
+                                <label for="hotelINFO">Hotel Info</label>
+                                <textarea class="form-control" name="short_address" id="hotelINFO" placeholder="Enter Hotel Info" rows="6" v-model="h_hotel_info"></textarea>
+                            </div>
+                        </div>                       
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelEmail">Hotel Email</label>
+                                <input type="text" class="form-control" v-model="h_email" id="hotelEmail" placeholder="Enter Hotel Email">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="hotelPhone">Hotel Phone</label>
+                                <input type="text" class="form-control" v-model="h_phone" id="hotelPhone" placeholder="Enter Hotel Phone Number">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelMap">Map</label>
+                                <textarea class="form-control" v-model="h_map" id="hotelMap" placeholder="Hotel Map" rows="6"></textarea>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="shortAddress">Short Address</label>
+                                <textarea class="form-control" name="short_address" id="shortAddress" placeholder="Enter Hotel Short Address" rows="6" v-model="h_short_address"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="inputCountry">Country</label>
+                                <select v-model="h_country_id" name="country" id="inputCountry" class="form-control" @change="getStateByCountry()">
+                                     <option v-for="country in allCountries" :value="country.country_id">${ country.country_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputState">State</label>
+                                <select v-model="h_state_id" name="state" id="inputState" class="form-control" @change="getCityByState()">
+                                    <option v-for="state in allStateList" :value="state.state_id">${ state.state_name }</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="inputCity">City</label>
+                                <select v-model="h_city_id" id="inputCity" name="city_id" class="form-control">
+                                    <option v-for="city in allCityList" :value="city.city_id">${ city.city_name }</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="hotelsImage">Hotel Image</label>
+                                <input @change="onFileChange" ref="hotelImage" type="file" class="form-control" name="h_image" id="hotelsImage" multiple />
+                            </div>
+                            
+                            <div class="form-group col-md-6">
+                                <label for="hotelType">Hotel Type</label>
+                                <select v-model="h_type" id="hotelType" name="hotel_type" class="form-control">
+                                    <option value="" selected>Select</option>
+                                    <option value="1">1 STAR</option>
+                                    <option value="2">2 STAR</option>
+                                    <option value="3">3 STAR</option>
+                                    <option value="4">4 STAR</option>
+                                    <option value="5">5 STAR</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+
+
+                            <div class="form-group col-md-12">
+                                <label for="hotelDiscount">Hotel Discount</label>
+                                <input type="number" class="form-control" name="hotel_discount_id" id="hotelDiscount" placeholder="Enter Hotel Discount" v-model="h_discount_id">
+                            </div>
+                        </div>
+
+                        <div class="n-chk">
+                            <label>
+                              <input v-model="h_is_active" type="checkbox" id="isActive" class="new-control-input" name="is_active" checked>
+                              <span>Is Active</span>
+                            </label>
+                        </div>
+                        
+                      <button type="submit" class="btn btn-primary mt-3">Add Hotel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- add form end -->
+    
+        <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Hotel List</h4>
+  
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="table-responsive mb-4 mt-4">
+                    <table id="dataTableContent" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Hotel Name</th>
+                                <th>Hotel Owner Name</th>
+                                <th>Hotel Type</th>
+                                <th>Short Address</th>
+                                <th>Phone</th>
+                                <th>Start date</th>
+                                <th>Avatar</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr v-for="hotel in allHotels" :key="hotel.hotel_id">
+                                <td>${ hotel.hotel_id }</td>
+                                <td>${ hotel.hotel_name }</td>
+                                <td>${ hotel.hotel_type }</td>
+                                <td>${ hotel.short_address }</td>
+                                <td>${ hotel.hotel_phone }</td>
+                                <td class="date_sp">${ hotel.created_at }</td>
+
+                                <td>
+                                    <div class="d-flex">
+                                        <div class="usr-img-frame mr-2 rounded-circle">
+                                            <img alt="avatar" class="img-fluid rounded-circle" src="/static/backEnd/assets/img/90x90.jpg">
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="text-center">
+                                    <a @click.prevent="editHotel(hotel.hotel_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Edit" data-original-title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2 p-1 br-6 mb-1"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></a>
+                                    &nbsp;
+                                    <a @click.prevent="deleteHotel(hotel.hotel_id);" href="javascript:void(0);" class="bs-tooltip" data-toggle="tooltip" data-placement="top" title="Delete" data-original-title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash p-1 br-6 mb-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></a>
+                                </td>
+                            </tr>
+
+                            
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- table end -->
+
+    </div>
+    <div v-if="error" class="snackbar-container  snackbar-pos top-right" style="width: auto; background: rgb(59, 63, 92); opacity: 1;">
+        <p style="margin: 0px; padding: 0px; color: rgb(255, 255, 255); font-size: 14px; font-weight: 300; line-height: 1em;">${msg}</p>
+        <button class="action" style="color: rgb(37, 213, 228);">Dismiss</button>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/plugins/highlight/highlight.pack.js' %}"></script>
+    <!-- data table script -->
+    <script src="{% static 'backEnd/plugins/table/datatable/datatables.js' %}"></script>
+    <script>
+        $('#dataTableContent').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search",
+               "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 15, 25, 50],
+            "pageLength": 10 
+        });
+
+        $('.top-right').click(function() {
+            Snackbar.show({
+                text: 'Example notification text.',
+                pos: 'top-right'
+            });
+        });
+
+    </script>
+     <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="{% static 'backEnd/assets/js/scrollspyNav.js' %}"></script>
+    <!-- toastr -->
+    <script src="{% static 'backEnd/plugins/notification/snackbar/snackbar.min.js' %}"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+
+    <!--  BEGIN CUSTOM SCRIPTS FILE  -->
+    <script src="{% static 'backEnd/assets/js/components/notification/custom-snackbar.js' %}"></script>
+
+    <!--  END CUSTOM SCRIPTS FILE  -->
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allHotels: [],
+                h_name : null,
+                h_slug : null,
+                h_reg_no : null,
+                h_email : null,
+                h_phone : null,
+                h_map : null,
+                h_short_address : null,
+                h_country_id : null,
+                h_state_id : null,
+                h_city_id : null,
+                h_hotel_info : null,
+                h_image : '',
+                h_type : null,
+                h_discount_id : null,
+                h_is_active : null,
+                // user_type_id: '',
+                msg : '',
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool: false,
+                allCountries: [],
+                allStateList: [],
+                allCityList: [],
+            },
+            mounted: function() {
+                this.getAllHotels();
+                this.getAllCountries();
+            },
+            methods: {
+                addHotel: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('hotel_name', this.h_name);
+                    form_data.append('slug_name', this.h_slug);
+                    form_data.append('hotel_reg_no', this.h_reg_no);
+                    form_data.append('hotel_email', this.h_email);
+                    form_data.append('hotel_phone', this.h_phone);
+                    form_data.append('Map', this.h_map);
+                    form_data.append('short_address', this.h_short_address);
+                    form_data.append('country_id', this.h_country_id);
+                    form_data.append('state_id', this.h_state_id);
+                    form_data.append('city_id', this.h_city_id);
+                    form_data.append('hotel_info', this.h_hotel_info);
+                    form_data.append('hotel_type', this.h_type);
+                    form_data.append('hotel_discount_id', this.h_discount_id);
+                    form_data.append('is_active', this.h_is_active);
+
+                    for( var i = 0; i < this.h_image.length; i++ ){
+                      let file = this.h_image[i];
+                      form_data.append('image', file);
+                    }
+
+                    this.$http.post(`/admin-api/hotel-admin-details/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.status == 201 || resp.status == 200) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                // get all hotels
+                                this.getAllHotels();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                
+                getAllHotels: function() {
+                    this.$http.get(`/admin-api/hotel-admin-details/`)
+                        .then((resp) => {
+                            this.allHotels = resp.data.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                getAllCountries: function() {
+                    this.$http.get(`/admin-api/country/`)
+                        .then((resp) => {
+                            this.allCountries = resp.data;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                getStateByCountry: function(event){
+                    this.$http.get(`/admin-api/state_by_country/${this.h_country_id}`)
+                      .then((resp) => {
+                        this.allStateList = resp.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                getCityByState: function(event){
+                    this.$http.get(`/admin-api/city_by_state/${this.h_state_id}`)
+                      .then((resp) => {
+                        this.allCityList = resp.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+                onFileChange(event) {
+                    this.h_image = event.target.files;
+                },
+                deleteHotel: function(hid){
+
+                    swal({
+                      title: 'Are you sure?',
+                      text: "You won't be able to revert this!",
+                      type: 'warning',
+                      showCancelButton: true,
+                      confirmButtonText: 'Delete',
+                      padding: '2em'
+                    }).then((result) => {
+                      if (result.value){
+
+                        this.$http.delete(`/api/hotel_details/${hid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                this.getAllHotels();
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+
+                      }
+                    });
+                },
+                editHotel: function(hid){
+                    this.click_event = true;
+                    // back to top when edit
+                    // window.scrollTo(0,0);
+                    let scrollingElement = (document.scrollingElement || document.body);
+                    $(scrollingElement).animate({
+                        scrollTop: 0
+                    }, 500);
+                    // send request
+                    this.$http.get(`/api/hotel_details/${hid}/`)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.update_bool = true;
+                                this.update_val = resp.data.data;
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+                updateHotel: function(hid){
+                    // var hotel_name = document.getElementById('hotelName').value;
+                    // alert(hotel_name); return false;
+                    // let hotel_reg_no = document.getElementById('hotelRegNo').value;
+                    // let hotel_email = document.getElementById('hotelEmail').value;
+                    // let hotel_phone = document.getElementById('hotelPhone').value;
+                    // let map = document.getElementById('hotelMap').value;
+                    // let short_address = document.getElementById('shortAddress').value;
+                    // let country_id = document.getElementById('inputCountry').value;
+                    // let state_id = document.getElementById('inputState').value;
+                    // let city_id = document.getElementById('inputCity').value;
+                    // let user_type = document.getElementById('hotelType').value;
+                    // let hotel_user_id = document.getElementById('hotelUserId').value;
+                    // let hotel_discount_id = document.getElementById('hotelDiscount').value;
+                    // let is_active = document.querySelector('.is_active').checked;
+                    // alert(is_active); return false;
+                    let form_data = new FormData();
+
+                    form_data.append('hotel_name', document.getElementById('updateHotelName_u').value);
+                    form_data.append('hotel_reg_no', document.getElementById('hotelRegNo_u').value);
+                    form_data.append('hotel_email', document.getElementById('hotelEmail_u').value);
+                    form_data.append('hotel_phone', document.getElementById('hotelPhone_u').value);
+                    form_data.append('Map', document.getElementById('hotelMap_u').value);
+                    form_data.append('short_address', document.getElementById('shortAddress_u').value);
+                    form_data.append('image_galary_details_id', document.getElementById('gallery_id').value);
+                    // form_data.append('state_id', document.getElementById('inputState').value);
+                    form_data.append('city_id', document.getElementById('inputCity_u').value);
+                    form_data.append('hotel_type', document.getElementById('hotelType_u').value);
+                    form_data.append('hotel_user_id', document.getElementById('hotelUserId_u').value);
+                    form_data.append('hotel_discount_id', document.getElementById('hotelDiscount_u').value);
+                    form_data.append('is_active', document.querySelector('.is_active').checked);
+
+                    // for( var i = 0; i < this.h_image.length; i++ ){
+                    //   let file = this.h_image[i];
+                    //   form_data.append('image', file);
+                    // }
+
+                    this.$http.put(`/api/hotel_details/${hid}/`, form_data)
+                        .then((resp) => {
+                            if (resp.data.error == false) {
+                                this.error = true
+                                this.msg = resp.data.message;
+                                this.getAllHotels();
+                                setInterval(function(){ 
+                                    error = false;
+                                 }, 3000);
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        })
+                },
+
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

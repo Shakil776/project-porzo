@@ -1,0 +1,212 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Hotel Discount{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'HotelAdmin:hotel_dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Room Discount</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Discount</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing">
+
+        <!-- add form start -->
+        <div class="col-lg-12 layout-spacing">
+            <div class="statbox widget box box-shadow">
+                <div class="widget-header">
+                    <div class="row">
+                        <div class="col-xl-12 col-md-12 col-sm-12 col-12">
+                            <h4>Add Discount</h4>
+                        </div>                                                                        
+                    </div>
+                </div>
+                <div class="widget-content widget-content-area">
+
+                    <!-- add room -->
+                    <form @submit.prevent="addhotelDiscount" id="addhotelDiscountForm" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="HotelDiscountName">Discount Name</label>
+                                <input type="text" class="form-control" v-model="hotel_discount_name" id="HotelDiscountName" placeholder="Discount Name">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="roomId">Room</label>
+                                <select v-model="room_id" name="room_id[]" class="form-control" id="roomId" multiple>
+                                    <option v-for="room in allRooms" :value="room.room_id" v-if="room.discount.hotel_discount_name != ''">
+                                        ${ room.room_name } (${room.discount.hotel_discount_name}, ${room.allow_offer_percent}%)
+                                    </option>
+                                    <option v-if="room.discount.hotel_discount_name === ''" v-for="room in allRooms" :value="room.room_id">
+                                        ${ room.room_name }
+                                    </option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="startDate">Start Date</label>
+                                <input type="date" class="form-control" v-model="start_time_date" id="startDate">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="endDate">End Date</label>
+                                <input type="date" class="form-control" v-model="end_time_date" id="endDate">
+                            </div>
+
+                        </div>
+
+                        <div class="form-row">
+
+
+                            <!-- <div class="form-group col-md-6">
+                                <label for="maxAMOUNT">Maximum Amount</label>
+                                <input type="number" class="form-control" id="maxAMOUNT" placeholder="Enter Max Amount" v-model="max_amount">
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="minAMOUNT">Minimum Amount</label>
+                                <input type="number" class="form-control" id="minAMOUNT" placeholder="Enter Minimum Amount" v-model="min_amount">
+                            </div> -->
+
+                            <div class="form-group col-md-6">
+                                <label for="offer_amount">Offer Amount (in %)</label>
+                                <input type="text" class="form-control" id="offer_amount" placeholder="Enter Offer Amount (in %)" v-model="allow_offer">
+                            </div>
+                            
+                        </div>
+                        
+                      <button type="submit" class="btn btn-primary mt-3">Add Discount</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allRooms : [],
+                hotel_user_owner_id : null,
+                hotel_discount_name : null,
+                room_id : [],
+                start_time_date : null,
+                end_time_date : null,
+                max_amount : null,
+                min_amount : null,
+                allow_offer : null,
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                logged_user_id: "{{ request.session.uid }}",
+            },
+            mounted: function() {
+                this.getRooms();
+            },
+            methods: {
+                addhotelDiscount: function(event) {
+                    let form_data = new FormData();
+
+                    form_data.append('hotel_user_owner_id', this.logged_user_id);
+                    form_data.append('hotel_discount_name', this.hotel_discount_name);
+                    form_data.append('room_id', this.room_id);
+                    form_data.append('start_time_date', this.start_time_date);
+                    form_data.append('end_time_date', this.end_time_date);
+                    // form_data.append('max_amount', this.max_amount);
+                    // form_data.append('min_amount', this.min_amount);
+                    form_data.append('allow_offer', this.allow_offer);
+
+                    this.$http.post(`/admin-api/discount-hotel/`, form_data)
+                        .then((resp) => {
+                            
+                            if (resp.data.error == false) {
+                                // clear all form field after successfully insert data
+                                this.hotel_discount_name = null;
+                                this.start_time_date = null;
+                                this.end_time_date = null;
+                                // this.max_amount = null;
+                                // this.min_amount = null;
+                                this.offer_amount = null;
+                                this.room_id = [];
+                                
+                                // back to top when edit
+                                let scrollingElement = (document.scrollingElement || document.body);
+                                $(scrollingElement).animate({
+                                    scrollTop: 0
+                                }, 500);
+                                iziToast.show({
+                                    title: 'Success!',
+                                    position: 'topRight',
+                                    timeout: 3000,
+                                    color: 'green',
+                                    message: 'Hotel Discount Added Successfully.',
+                                    messageColor: 'black'
+                                });
+                                this.getRooms();
+                            }
+                            else {
+                                //Show Toast Message
+                                iziToast.show({
+                                    title: 'Opppps!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong. Please try again.',
+                                    messageColor: 'black'
+                                });
+
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            //Show Toast Message
+                                iziToast.show({
+                                    title: 'Opppps!',
+                                    position: 'topRight',
+                                    timeout: 2000,
+                                    color: 'red',
+                                    message: 'Something Wrong. Please try again.',
+                                    messageColor: 'black'
+                                });
+                        })
+                },
+                getRooms(){
+                    this.$http.get(`/admin-api/get-hotel-room/?user_id=${this.logged_user_id}`)
+                      .then((resp) => {
+                        this.allRooms = resp.data.data;
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                    })
+                },
+            }
+        });
+    </script>
+    <!-- vue js scripts end -->
+   
+
+{% endblock %}

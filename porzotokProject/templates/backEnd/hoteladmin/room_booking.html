@@ -1,0 +1,170 @@
+{% extends 'backEnd/hoteladmin/layout/admin_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Confirm Booking{% endblock  %}
+
+{% block main_content %}
+
+<div class="row mt-2 ml-2">
+    <div class="col-12">
+        <nav class="breadcrumb-two" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'webapp:dashboard' %}">Home</a></li>
+                <li class="breadcrumb-item active"><a href="javascript:void(0);">Room Booking List</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a href="javascript:void(0);">Room Booking List</a></li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+<!-- table start -->
+<div id="app" class="layout-px-spacing">
+
+    <div class="row layout-top-spacing" >
+
+            <!-- table start -->
+        <div class="col-xl-12 col-lg-12 col-sm-12  layout-spacing">
+            <h4 class="d-inline">Room Booking List</h4><br>
+      
+            <div class="widget-content widget-content-area br-6 mt-4">
+                <div class="row">
+                    <div class="col-sm-4">
+                        Show
+                        <select v-model="perPage" @change="handlePageSizeChange($event)">
+                            <option v-for="size in pageSizes" :key="size" :value="size">${ size }</option>
+                        </select>
+                        entries
+                    </div>
+                
+                    <div class="col-sm-4 offset-sm-4">
+                      <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Search" v-model="searchKey"  @keyup="getSearchData" />
+                      </div>
+                    </div>
+                </div>
+                <div class="table-responsive mb-4 mt-4">
+                    <table class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Room Name</th>
+                                <th>Room No</th>
+                                <th>Hotel Name</th>
+                                <th>Book By User</th>
+                                <th>Check In Date</th>
+                                <th>Check Out Date</th>
+                                <th>Total Day</th>
+                                <th>Price</th>
+                                <th>Room Status</th>
+                                <th>B. Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                              <tr v-if="allRoomBookingList.length" v-for="(r_book, index) in allRoomBookingList" :key="r_book.room_cart_details_id">
+                                <td>${ index+1 }</td>
+                                <td>${ r_book.room_details.room_name }</td>
+                                <td>${ r_book.room_details.room_no }</td>
+                                <td>${ r_book.room_details.hotel_details.hotel_name }</td>
+                                <td>${ r_book.cart_details.user_details.user_name }</td>
+                                <td>${ r_book.check_in_date }</td>
+                                <td>${ r_book.check_out_date }</td>
+                                <td>${ r_book.total_day }</td>
+                                <td>${ r_book.static_offer_price }</td>
+                                <td>
+                                    <select>
+                                        <option v-if="r_book.room_status == 3" selected="" value="3"> PENDING</option>
+                                        <option v-else value="3"> PENDING</option>
+                                        <option v-if="r_book.room_status == 4" selected="" value="4"> COMPLETED</option>
+                                        <option v-else value="4"> COMPLETED</option>  
+                                    </select>
+                                </td>
+
+                                <td>PORZ${bookingIdDateFormat(r_book.cart_details.books[0].created_at, "fullDate")}${r_book.cart_details.books[0].booking_id}</td>
+                                <!-- <td>PORZ$</td> -->
+                              </tr>
+                              <tr v-show="!allRoomBookingList.length" class="text-center"><td colspan="8">No Data</td></tr>
+                        </tbody>
+                    </table>
+                    <div v-if="allRoomBookingList.length">
+                        <b-pagination v-model="currentPage" :total-rows="totalItems" :per-page="perPage" first-text="First" prev-text="Prev" next-text="Next" last-text="Last"></b-pagination>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- table end -->
+{% endblock %}
+
+{% block custom_js %}
+    <script src="{% static 'backEnd/assets/js/moment.min.js' %}"></script>
+
+    <!-- vue js scripts start -->
+    <script type="text/javascript">
+
+        new Vue({
+            el: '#app',
+            delimiters: ['${','}'],
+            data: {
+                allRoomBookingList : [],
+                error: '',
+                update_val : '',
+                click_event : false,
+                update_bool : false,
+                hide_or_vis : "none",
+                logged_user_id: {{ request.session.uid }},
+                perPage: 10,
+                currentPage: 1,
+                totalItems: 0,
+                pageSizes: [10, 15, 20, 30],
+                searchKey: null,
+            },
+            mounted: function() {
+                this.getAllRoomBookingList();   
+            },
+            methods: {               
+                async getAllRoomBookingList() {
+                    await this.$http.get(`/admin-api/room-booking/?user_id=${this.logged_user_id}&page=${this.currentPage}&size=${this.perPage}`)
+                        .then(resp => {
+                            this.allRoomBookingList = resp.data.results;
+                            this.totalItems = resp.data.count;
+                        })
+                },
+                handlePageSizeChange(event) {
+                    this.perPage = parseInt(event.target.value);
+                    this.getAllRoomBookingList();
+                },
+                async getSearchData() {
+                    if (this.searchKey != null && this.logged_user_id != null) {
+                        const result = await this.$http.get(`/admin-api/booking-details-search/?user_id=${this.logged_user_id}&key=${this.searchKey}`);
+                        if (result.data.error === false) {
+                            this.getAllRoomBookingList = result.data.data;
+                            this.totalItems = result.data.count;
+                        }
+                    } 
+                },
+                bookingIdDateFormat(date, dateType) {
+                    const date1 = new Date(date);
+                    if (dateType === "fullDate") {
+                        return moment(date1).format('L').split("/").join("");
+                    }
+                },
+            },
+            watch: {
+                currentPage: {
+                  handler: function(value) {
+                    this.getAllRoomBookingList();
+                  }
+                }
+            }
+
+        });
+    </script>
+    <!-- vue js scripts end -->
+{% endblock %}

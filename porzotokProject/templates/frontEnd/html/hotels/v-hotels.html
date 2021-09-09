@@ -1,0 +1,629 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+{% load hotel_info %}
+
+{% block title %}Porzotok || Search Result{% endblock  %}
+
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/search.css' %}">
+<link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/home.css' %}">
+<style type="text/css">
+.max{
+    width: 49%;
+}
+.min{
+    width: 49%;
+    margin-left: 2%;
+}
+
+.form-control {
+    padding: 10px;
+    color: #000 !important;
+    border: 1px solid#C20035 !important;
+}
+</style>
+{% endblock  %}
+
+
+{% block main_content %}
+<!-- ========== MAIN CONTENT ========== -->
+<main id="content" role="main" v-cloak>
+    <div class="container pt-5 pt-xl-4">
+        <div class="row mb-5">
+            <!-- Search  -->
+            <div class="col-md-6 offset-md-3">
+                <div class="row" id="searchResultshow" v-cloak>
+                    <div class="col-md-12" style="position: absolute; z-index: 1;">
+                        <div class="list-group searchResultHover">
+                            <a v-for="city in cityData" :href="`{% url 'webapp:search' %}?q=${city.city_name}`" class="list-group-item" @click="showHotelNameInSearchBox(city.city_name);"><span class="iconColor"><i class="fas fa-map-marker-alt"></i></span> ${city.city_name}<i class="iconColor float-right">city</i> </a>
+                            <a v-for="match in searchData" :href="`{% url 'webapp:search' %}?q=${match.hotel_name}`" class="list-group-item" @click="showHotelNameInSearchBox(match.hotel_name);">
+                            <span class="iconColor"><i class="fas fa-hotel"></i>&nbsp;</span>${match.hotel_name}<i class="iconColor float-right">hotel</i>   
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-5 mb-lg-8 mt-xl-1">
+            <div class="col-lg-4 col-xl-3 order-lg-1 width-md-50">
+                <div class="navbar-expand-lg navbar-expand-lg-collapse-block">
+                    <button class="btn d-lg-none mb-5 p-0 collapsed" type="button" data-toggle="collapse" data-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="far fa-caret-square-down text-primary font-size-20 card-btn-arrow ml-0"></i>
+                        <span class="text-primary ml-2">Sidebar</span>
+                    </button>
+                    <div id="sidebar" class="collapse navbar-collapse">
+                        <div class="mb-6 w-100">
+                           <!-- accordian top content here -->
+
+                            <div class="sidenav border border-color-8 rounded-xs">
+                                <!-- Accordiaon -->
+                                <!-- price filter -->
+                                <div id="shopCartAccordion" class="accordion rounded shadow-none">
+                                    <div class="border-0">
+                                        <div class="card-collapse" id="shopCardHeadingOne">
+                                            <h3 class="mb-0">
+                                                <button type="button" class="btn btn-link btn-block card-btn py-2 px-5 text-lh-3 collapsed" data-toggle="collapse" data-target="#shopCardOne" aria-expanded="false" aria-controls="shopCardOne">
+                                                    <span class="row align-items-center">
+                                                        <span class="col-9">
+                                                            <span class="d-block font-size-lg-15 font-size-17 font-weight-bold text-dark">Price Range</span>
+                                                        </span>
+                                                        <span class="col-3 text-right">
+                                                            <span class="card-btn-arrow">
+                                                                <span class="fas fa-chevron-down small"></span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </button>
+                                            </h3>
+                                        </div>
+                                        <div id="shopCardOne" class="collapse show" aria-labelledby="shopCardHeadingOne" data-parent="#shopCartAccordion">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-center">
+                                                    <input type="number" name="min" class="form-control max" @focusout ="PriceFilter" placeholder="Min Price" id="priceChangeMin">
+                                                    <input type="number" @focusout ="PriceFilter" name="max" class="form-control min" placeholder="Max Price" id="priceChangeMax">
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <!-- city filter -->
+                                <div id="cityCategoryAccordion" class="accordion rounded-0 shadow-none border-top">
+                                    <div class="border-0">
+                                        <div class="card-collapse" id="cityCategoryHeadingOne">
+                                            <h3 class="mb-0">
+                                                <button type="button" class="btn btn-link btn-block card-btn py-2 px-5 text-lh-3 collapsed" data-toggle="collapse" data-target="#cityCategoryOne" aria-expanded="false" aria-controls="cityCategoryOne">
+                                                    <span class="row align-items-center">
+                                                        <span class="col-9">
+                                                            <span class="font-weight-bold font-size-17 text-dark mb-3">City</span>
+                                                        </span>
+                                                        <span class="col-3 text-right">
+                                                            <span class="card-btn-arrow">
+                                                                <span class="fas fa-chevron-down small"></span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </button>
+                                            </h3>
+                                        </div>
+                                        <div id="cityCategoryOne" class="collapse show" aria-labelledby="cityCategoryHeadingOne" data-parent="#cityCategoryAccordion">
+                                            <div class="card-body pt-0 mt-1 px-5 pb-4">
+
+                                                <div v-for="city in allCitys.slice(0, 5)" class="form-group font-size-14 text-lh-md mb-3 flex-center-between">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input @change="getHotelByCity" type="checkbox" class="custom-control-input" :id="city.city_id" v-model="citys" :value="city.city_name">
+                                                        <label class="custom-control-label" :for="city.city_id">${city.city_name}</label>
+                                                    </div>
+                                                    <!-- <span>5</span> -->
+                                                </div>
+                                                <!-- End Checkboxes -->
+
+                                                <!-- View More - Collapse -->
+                                                <div class="collapse" id="collapseBrand3">
+
+                                                    <div v-for="city in allCitys.slice(5)" class="form-group font-size-14 text-lh-md mb-3 flex-center-between">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input @change="getHotelByCity" type="checkbox" class="custom-control-input" :id="city.city_id" v-model="citys" :value="city.city_name">
+                                                            <label class="custom-control-label" :for="city.city_id">${city.city_name}</label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                                <!-- End View More - Collapse -->
+
+                                                <!-- Link -->
+                                                <a class="link link-collapse small font-size-1" data-toggle="collapse" href="#collapseBrand3" role="button" aria-expanded="false" aria-controls="collapseBrand3">
+                                                  <span class="link-collapse__default font-size-14">Show all</span>
+                                                  <span class="link-collapse__active font-size-14">Show less</span>
+                                                </a>
+                                                <!-- End Link -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- facilities filter -->
+                                <div id="facilityCategoryAccordion" class="accordion rounded-0 shadow-none border-top">
+                                    <div class="border-0">
+                                        <div class="card-collapse" id="facilityCategoryHeadingOne">
+                                            <h3 class="mb-0">
+                                                <button type="button" class="btn btn-link btn-block card-btn py-2 px-5 text-lh-3 collapsed" data-toggle="collapse" data-target="#facilityCategoryOne" aria-expanded="false" aria-controls="facilityCategoryOne">
+                                                    <span class="row align-items-center">
+                                                        <span class="col-9">
+                                                            <span class="font-weight-bold font-size-17 text-dark mb-3">Facilities</span>
+                                                        </span>
+                                                        <span class="col-3 text-right">
+                                                            <span class="card-btn-arrow">
+                                                                <span class="fas fa-chevron-down small"></span>
+                                                            </span>
+                                                        </span>
+                                                    </span>
+                                                </button>
+                                            </h3>
+                                        </div>
+
+                                        <div id="facilityCategoryOne" class="collapse show" aria-labelledby="facilityCategoryHeadingOne" data-parent="#facilityCategoryAccordion">
+                                            <div class="card-body pt-0 mt-1 px-5 pb-4">
+
+                                                <div v-for="facilities in allFacilities.slice(0, 5)" class="form-group font-size-14 text-lh-md mb-3 flex-center-between">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input @change="getHotelByFacilities" type="checkbox" class="custom-control-input" :id="facilities.facilites_name" :value="facilities.facilites_name" v-model="facilitiess">
+                                                        <label class="custom-control-label" :for="facilities.facilites_name">${facilities.facilites_name}</label>
+                                                    </div>
+                                                    
+                                                </div>
+
+
+                                                <!-- End Checkboxes -->
+
+                                                <!-- View More - Collapse -->
+                                                <div class="collapse" id="collapseBrand1">
+
+                                                    <div v-for="facilities in allFacilities.slice(5)" class="form-group font-size-14 text-lh-md mb-3 flex-center-between">
+                                                        <div class="custom-control custom-checkbox">
+                                                            <input @change="getHotelByFacilities" type="checkbox" class="custom-control-input" :id="facilities.facilites_name" :value="facilities.facilites_name" v-model="facilitiess">
+                                                            <label class="custom-control-label" :for="facilities.facilites_name">${facilities.facilites_name}</label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                                <!-- End View More - Collapse -->
+
+                                                <!-- Link -->
+                                                <a class="link link-collapse small font-size-1" data-toggle="collapse" href="#collapseBrand1" role="button" aria-expanded="false" aria-controls="collapseBrand1">
+                                                  <span class="link-collapse__default font-size-14">Show all</span>
+                                                  <span class="link-collapse__active font-size-14">Show less</span>
+                                                </a>
+                                                <!-- End Link -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Accordion -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8 col-xl-9 order-md-1 order-lg-2 pb-5 pb-lg-0">
+                <!-- Shop-control-bar Title -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="font-size-21 font-weight-bold mb-0 text-lh-1" v-cloak>${this.filterDataByAttribute.length} Hotels Found</h3>
+                    <ul class="nav tab-nav-shop flex-nowrap" id="pills-tab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link font-size-22 p-0 active" id="pills-three-example1-tab" data-toggle="pill" href="#pills-three-example1" role="tab" aria-controls="pills-three-example1" aria-selected="true">
+                                <div class="d-md-flex justify-content-md-center align-items-md-center">
+                                    <i class="fa fa-list"></i>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link font-size-22 p-0 ml-2 " id="pills-one-example1-tab" data-toggle="pill" href="#pills-one-example1" role="tab" aria-controls="pills-one-example1" aria-selected="false">
+                                <div class="d-md-flex justify-content-md-center align-items-md-center">
+                                    <i class="fa fa-th"></i>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- End shop-control-bar Title -->
+
+                <!-- Slick Tab carousel -->
+                <div class="u-slick__tab">
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-three-example1" role="tabpanel" aria-labelledby="pills-three-example1-tab" data-target-group="groups">
+                            <ul class="d-block list-unstyled products-group prodcut-list-view">
+
+                                <li v-for="(result, index) in filterDataByAttribute" class="card mb-5 overflow-hidden">
+                                    <div class="product-item__outer w-100">
+                                        <div class="row">
+                                            <div class="col-md-5 col-xl-4">
+                                                <div class="product-item__header">
+                                                    <div class="position-relative">
+                                                        <div class="slideshow-container">
+                                                            <div v-for="(img,index) in result.image_url" v-if="index == 0" class="mySlides fade isActivate">
+                                                                <a :href="'/hotel/'+result.slug_name"><img :src="img.Image" :alt="result.hotel_name" style="width:100%; height:180px" /></a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-7 col-xl-5 col-wd-4gdot5 flex-horizontal-center">
+                                                <div class="w-100 position-relative m-4 m-md-0">
+                                                    <div class="mb-1 pb-1">
+                                                        <span class="badge badge-primary text-white rounded-xs font-size-13 py-1 p-xl-2">Limited Time Offer</span>
+                                                        <span class="green-lighter ml-2">
+                                                            <small class="fas fa-star font-size-10 ac-color"></small>
+                                                            <small class="fas fa-star font-size-10 ac-color"></small>
+                                                            <small class="fas fa-star font-size-10 ac-color"></small>
+                                                            <small class="fas fa-star font-size-10 ac-color"></small>
+                                                            <small class="fas fa-star font-size-10"></small>
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="position-absolute top-0 right-0 pr-md-3 d-none d-md-block">
+                                                        <button type="button" class="btn btn-sm btn-icon rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                                                            <span class="flaticon-heart-1 font-size-20"></span>
+                                                        </button>
+                                                    </div>
+                                                    <a :href="'/hotel/'+result.slug_name">
+                                                        <span class="font-weight-medium font-size-17 text-dark d-flex mb-1 hotel-name-hover">${result.hotel_name} </span>
+                                                    </a>
+                                                    <div class="card-body p-0">
+                                                        <a href="javascript:" class="d-block mb-3">
+                                                            <div class="d-flex flex-wrap flex-xl-nowrap align-items-center font-size-14 text-gray-1">
+                                                                <i class="icon flaticon-placeholder mr-2 font-size-20"></i> ${result.city.city_name}, ${result.city.state.country.country_name}
+                                                                <small class="px-1 font-size-15"> - </small>
+                                                                <span class="text-primary font-size-14">View on map</span>
+                                                            </div>
+                                                        </a>
+                                                        <ul class="list-unstyled mb-2 d-flex align-content-around flex-wrap">
+                                                            
+                                                            <li v-for="facilities in result.hotel_facilities" class="border border-dark rounded-xs text-body align-items-center text-lh-1 py-1 px-2 mr-md-2 mb-2 flex-fill">
+                                                                <span class="font-weight-normal font-size-14">${facilities.facilites_id.facilites_name}</span>
+                                                            </li>
+                                                            
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col col-xl-3 col-wd-3gdot5 align-self-center py-4 py-xl-0 border-top border-xl-top-0">
+                                                <div class="d-xl-flex flex-wrap border-xl-left ml-4 ml-xl-0 pr-xl-3 pr-wd-5 text-xl-right justify-content-xl-end">
+                                                    <div class="mb-xl-5 mb-wd-7">
+                                                        <div class="mb-0">
+                                                            <div class="my-xl-1">
+                                                                <div class="d-flex align-items-center justify-content-xl-end mb-2">
+                                                                    <span class="badge badge-primary rounded-xs font-size-14 p-2 mr-2 mb-0">4 / 5 </span>
+                                                                    <span class="font-size-17 font-weight-bold text-primary">Very Good</span>
+                                                                </div>
+                                                            </div>
+                                                            <span class="font-size-14 text-gray-1">(11 Reviews)</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-0">
+                                                        <span class="mr-1 font-size-14 text-gray-1">From</span>
+                                                        <span v-if="min_amount.index === Infinity" class="font-weight-bold">0 TK</span>
+                                                		<span v-else class="font-weight-bold">${min_amount[index]} TK</span>
+                                                        <span class="font-size-14 text-gray-1"> / night</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-pane fade" id="pills-one-example1" role="tabpanel" aria-labelledby="pills-one-example1-tab" data-target-group="groups">
+                            <div class="row">
+
+                                <div v-for="(result, index) in filterDataByAttribute" class="col-md-6 col-lg-4 mb-3 mb-md-4 pb-1">
+                                    <div class="card transition-3d-hover shadow-hover-2 tab-card h-100 borrder">
+                                        <div class="position-relative">
+                                            <a :href="'/hotel/'+result.slug_name" class="d-block gradient-overlay-half-bg-gradient-v5">
+                                                <img class="min-height-230 bg-img-hero card-img-top" :src="result.image_url['0'].Image" alt="">
+                                            </a>
+                                            <div class="position-absolute top-0 right-0 pt-3 pr-3">
+                                              <button type="button" class="btn btn-sm btn-icon text-white rounded-circle" data-toggle="tooltip" data-placement="top" title="" data-original-title="Save for later">
+                                                <span class="flaticon-valentine-heart"></span>
+                                              </button>
+                                            </div>
+                                            <div class="position-absolute bottom-0 left-0 right-0">
+                                                <div class="px-4 pb-3">
+                                                    <a :href="'/hotel/'+result.slug_name" class="d-block">
+                                                        <div class="d-flex align-items-center font-size-14 text-white">
+                                                            <i class="icon flaticon-pin-1 mr-2 font-size-20"></i> ${result.city.city_name}, ${result.city.state.country.country_name}
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-body pl-3 pr-4 pt-2 pb-3">
+                                            <div class="ml-1 mb-2">
+                                                <div class="d-inline-flex align-items-center font-size-13 text-lh-1 text-primary letter-spacing-3">
+                                                    <div class="green-lighter">
+                                                        <small class="fas fa-star ac-color"></small>
+                                                        <small class="fas fa-star ac-color"></small>
+                                                        <small class="fas fa-star ac-color"></small>
+                                                        <small class="fas fa-star ac-color"></small>
+                                                        <small class="fas fa-star"></small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <a :href="'/hotel/'+result.slug_name" class="card-title font-size-17 font-weight-medium text-dark">${result.hotel_name}</a>
+                                            <div class="mt-2 mb-3">
+                                                <span class="badge badge-pill badge-primary py-1 px-2 font-size-14 border-radius-3 font-weight-normal">4 / 5</span>
+                                                <span class="font-size-14 text-gray-1 ml-2">(10 reviews)</span>
+                                            </div>
+                                            <div class="mb-0">
+                                                <span class="mr-1 font-size-14 text-gray-1">From</span>
+                                                <span v-if="min_amount.index === Infinity" class="font-weight-bold">0 TK</span>
+                                                <span v-else class="font-weight-bold">${min_amount[index]} TK</span>
+                                                <span class="font-size-14 text-gray-1"> / night</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Tab Content -->
+                </div>
+                <!-- Slick Tab carousel -->
+            </div>
+        </div>
+    </div>
+</main>
+<!-- ========== END MAIN CONTENT ========== -->
+{% endblock %}
+
+{% block custom_js %}
+<script src="{% static 'frontEnd/assets/vendor/gmaps/gmaps.min.js' %}"></script>
+<script src="{% static 'frontEnd/assets/vendor/ion-rangeslider/js/ion.rangeSlider.min.js' %}"></script>
+<script src="{% static 'frontEnd/assets/vendor/custombox/dist/custombox.min.js' %}"></script>
+<script src="{% static 'frontEnd/assets/vendor/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+<script src="{% static 'frontEnd/assets/js/components/hs.malihu-scrollbar.js' %}"></script>
+<script src="{% static 'frontEnd/assets/js/components/hs.g-map.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.js"></script>
+
+
+<!--MAP VUE JS-->
+<script src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+<script src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+<!--MAP VUE JS-->
+<!-- vue js scripts start -->
+<!-- search functionality -->
+<script type="text/javascript">
+	Vue.config.productionTip = false;
+	Vue.config.devtools = false;
+
+	const platform = new H.service.Platform({
+	  'apikey': 'qp2exxcmvTaxP7qKM_gZ-QgNWssVG3vQA_hIHVayA2Q'
+	});
+	const geocoder = platform.getGeocodingService();
+
+    new Vue({
+        el: '#content',
+        delimiters: ['${','}'],
+        data: {
+            searchResultData: [],
+            filterDataByAttribute: [],
+            allCitys: [],
+            allFacilities: [],
+            slideIndex: 1,
+            cssVal: '',
+            citys: [],
+            facilitiess: [],
+            search_session_id: "{{ request.session.search_session_id }}",
+            user_id: "{{ request.session.user_id }}",
+            searchKey: '',
+            searchData: [],
+            cityData: [],
+            priceRange: "",
+            priceRangeList: [],
+            cha : null,
+            location:null,
+		    gettingLocation: false,
+		    errorStr:null,
+		    min_amount : [],
+        },
+        mounted: function(){
+        	this.locateMe();
+            this.getSearchData();
+            this.getAllCitys();
+            this.getAllFacilities();
+            // this.showSlides(this.slideIndex);
+            var key = window.location['href'].split('q=')[1];
+            this.searchKey = decodeURI(key);
+
+            // var min = document.getElementById('rangeSliderExample3MinResult');
+            // var max = document.getElementById('rangeSliderExample3MaxResult');
+            // console.log(min.innerHTML);
+
+        },
+        computed: {
+
+        },
+        methods: {
+        	async getLocation() {
+      
+		      return new Promise((resolve, reject) => {
+
+		        if(!("geolocation" in navigator)) {
+		          reject(new Error('Geolocation is not available.'));
+		        }
+
+		        navigator.geolocation.getCurrentPosition(pos => {
+		          let reverseGeocodingParameters = {
+		            prox: `${pos.coords.latitude},${pos.coords.longitude}`,
+		            mode: 'retrieveAddresses',
+		            maxresults: 1
+		          };
+
+		          geocoder.reverseGeocode(
+		            reverseGeocodingParameters,
+		            res => {
+		              let results = res.Response.View;
+		              if(results.length === 0) {
+		                resolve('No match.')
+		              } else {
+		                resolve(results[0].Result[0].Location);
+		              }
+		            },
+		            e => reject(e) 
+		          );
+		        }, err => {
+		          reject(err);
+		        });
+
+		      });
+		    },
+		    async locateMe() {
+
+		      this.gettingLocation = true;
+		      try {
+		        this.gettingLocation = false;
+		        this.location = await this.getLocation();
+		        console.log(this.location);
+		      } catch(e) {
+		        this.gettingLocation = false;
+		        this.errorStr = e.message;
+		      }
+		      
+		    },
+            getSearchData: function(){
+                var key = window.location['href'].split('q=')[1];
+                this.$http.get(`/api/hotels/`)
+                    .then((resp) => {
+                        this.searchResultData = resp.data.data;
+                        var min = 0;
+
+                        for(var i=0; i< this.searchResultData.length; i++){
+                        	var new_price_list = [];
+                        	for(var j=0; j<this.searchResultData[i].room_details.length; j++){
+                        		var js = parseInt(this.searchResultData[i].room_details[j].price_details.offer_price);
+                        		new_price_list.push(js);
+                        	}
+                        	var min = Math.min.apply(null, new_price_list);
+                        	this.min_amount.push(min);
+
+                        	console.log(this.min_amount);
+                        }
+
+                        this.filterDataByAttribute = this.searchResultData;
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })   
+            },
+
+            getAllCitys: function(){
+                this.$http.get('/api/city/')
+                .then((resp) => {
+                    this.allCitys = resp.data;
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+            },
+            getAllFacilities: function(){
+                this.$http.get('/api/facilites/')
+                .then((resp) => {
+                    this.allFacilities = resp.data.data;
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+            },
+            getHotelByCity: function(e){
+                this.citys = [e.target.value];
+                this.filterDataByAttribute = [];
+                for (var i = 0; i < this.searchResultData.length; i++) {
+                    if (this.searchResultData[i].city.city_name == e.target.value) {
+                        this.filterDataByAttribute.push(this.searchResultData[i]);
+                    }
+                }
+                console.log(this.filterDataByAttribute);
+            },
+            getHotelByFacilities: function(){
+                this.filterDataByAttribute = [];
+
+                // for (var i = 0; i < this.searchResultData.length; i++) {
+                //     for (var j = 0; j < this.searchResultData[i].hotel_facilities.length; j++) {
+                //         if (this.searchResultData[i].hotel_facilities[j].facilites_id.facilites_name in this.facilitiess) {
+                //             this.filterDataByAttribute.push(this.searchResultData[i]);
+                //         }
+                //     }
+                // }
+
+
+                // for (var i = 0; i < this.searchResultData.length; i++) {
+                //     // if (this.searchResultData[i].facilites_id.facilites_name == e.target.value) {
+                //     //     this.filterDataByAttribute.push(this.searchResultData[i]);
+                //     // } 
+                // }
+            },
+            // getHotelByPrice: function(){
+                
+            // },
+            plusSlides: function(n){
+                this.showSlides(this.slideIndex += n);
+            },
+            currentSlide: function(n){
+                this.showSlides(this.slideIndex = n);
+            },
+            showSlides: function(n){
+                var i;
+                var slides = document.getElementsByClassName("mySlides");
+                if (n > slides.length) {this.slideIndex = 1}    
+                if (n < 1) {this.slideIndex = slides.length}
+                for (i = 0; i < slides.length; i++) {
+                    slides[i].className = "isActivate";  
+                }
+
+                slides[this.slideIndex-1].className += "isDeactivate";
+            },
+            searchForm: function(){
+                if(this.searchKey != ""){
+                    window.location.href = `/search/?q=${this.searchKey}`;
+                }
+            },
+            PriceFilter: function(){
+                var priceChangeMin = document.getElementById('priceChangeMin').value;
+                console.log(priceChangeMin);
+                var priceChangeMax = document.getElementById('priceChangeMax').value;
+                var min = parseInt(priceChangeMin);
+                var max = parseInt(priceChangeMax);
+                this.filterPriceDataByAttribute = []
+                
+                this.filterDataByAttribute = [];
+                if(priceChangeMin > 0 && priceChangeMax > 0){
+                    for (var ho = 0; ho < this.searchResultData.length; ho++) {
+                        for(var room =0; room < this.searchResultData[ho].room_details.length; room++){
+                            console.log(this.searchResultData[ho])
+                            if (min < parseInt(this.searchResultData[ho].room_details[room].price_details.offer_price) && max > parseInt(this.searchResultData[ho].room_details[room].price_details.offer_price)) {
+                                console.log(this.searchResultData[ho])
+                                this.filterDataByAttribute.push(this.searchResultData[ho]);
+                                break;
+                            }
+                        }
+                    }
+                }else{
+                    this.filterDataByAttribute = this.searchResultData;
+                }
+            },
+        },
+        
+    });
+</script>
+<!-- vue js scripts end -->
+{% endblock %}
+
+

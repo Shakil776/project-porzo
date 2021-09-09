@@ -1,0 +1,145 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || Login{% endblock  %}
+
+{% block custom_css %}
+    <link rel="stylesheet" href="{% static 'frontEnd/assets/customcss/login.css' %}">
+{% endblock %}
+
+{% block main_content %} 
+<div id="login-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-12">
+                <div class="login-section">
+                    
+                    <form class="js-validate" novalidate="novalidate" method="post">
+                        <!-- Login -->
+                        <div class="card">
+                            <!-- Header -->
+                            <div class="card-header text-center">
+                                <h3 class="h5 mb-0 font-weight-semi-bold">Login</h3>
+                            </div>
+                            <!-- End Header -->
+                            <div class="card-body pt-6 pb-4">
+                                <!-- Form Group -->
+                                <div class="form-group pb-1">
+                                    <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                        <label class="sr-only" for="login">Mobile</label>
+                                        <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                            <input v-model="login_mobile" type="text" class="form-control" name="mobile" placeholder="Mobile" aria-label="Mobile" aria-describedby="mobile" required="" data-msg="Please enter a valid mobile number." data-error-class="u-has-error" data-success-class="u-has-success">
+                                            <div class="input-group-append" onautocomplete="off">
+                                                <span class="input-group-text" id="mobile">
+                                                    <span class="fas fa-mobile-alt font-size-20"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Form Group -->
+                                <!-- Form Group -->
+                                <div class="form-group pb-1">
+                                    <div class="js-form-message js-focus-state border border-width-2 border-color-8 rounded-sm">
+                                        <label class="sr-only" for="signinSrPassword">Password</label>
+                                        <div class="input-group input-group-tranparent input-group-borderless input-group-radiusless">
+                                            <input v-model="login_password" type="password" class="form-control" name="password" placeholder="Password" aria-label="Password" aria-describedby="signinPassword" required="" data-msg="Your password is invalid. Please try again." data-error-class="u-has-error" data-success-class="u-has-success">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text" id="signinPassword">
+                                                    <span class="flaticon-password font-size-20"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Form Group -->
+                                <div class="mb-3 pb-1">
+                                    <button @click.prevent="userLogin"  type="submit" class="btn btn-md btn-block btn-blue-1 rounded-xs font-weight-bold transition-3d-hover">Login</button>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <div class="custom-control custom-checkbox custom-control-inline">
+                                        <input type="checkbox" id="rememberMe" name="rememberMe" class="custom-control-input">
+                                        <label class="custom-control-label" for="rememberMe">Remember me</label>
+                                    </div>
+                                    <a class="js-animation-link text-black font-size-14" href="javascript:;" data-target="#forgotPassword" data-link-group="idForm" data-animation-in="fadeIn"><u>Forgot Password?</u></a>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer p-0">
+                                
+                                <div class="card-footer__bottom p-4 text-center font-size-14">
+                                    <span class="text-gray-1">Don't have an account?</span>
+                                    <a class="font-weight-bold text-logo-color" href="{% url 'webapp:mobile_signup' %}">Sign Up</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Login -->
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script type="text/javascript">
+
+    new Vue({
+        el: '#login-section',
+        delimiters: ['${','}'],
+        data: {
+            login_mobile: null,
+            login_password: null,
+            session_id: "{{ request.session.session_id }}",
+            user_id: "{{ request.session.user_id }}",
+            user_name: "{{ request.session.user_name }}",
+            type: "{{ request.session.type }}",
+            time: "{{ request.session.time }}",
+            isLogin: "{{ request.session.isLogin }}",
+        },
+        mounted: function() {
+            if(this.isLogin != ""){
+                this.isLogin = JSON.parse("{{ request.session.isLogin }}".toLowerCase());
+            }
+        },
+
+        methods: {
+            userLogin: function(){
+                let form_data = new FormData();
+                form_data.append('mobile', this.login_mobile);
+                form_data.append('password', this.login_password);
+                this.$http.headers.common['X-CSRFToken'] = "{{ csrf_token }}";
+                this.$http.post(`/user-login/`, form_data)
+                    .then((resp) => {
+                        if(resp.data.data.isLogin === true){
+                            this.user_id = resp.data.data.user_id;
+                            this.user_name = resp.data.data.user_name;
+                            this.type = resp.data.data.type;
+                            this.time = resp.data.data.time;
+                            this.isLogin = resp.data.data.isLogin;
+                            // redirect home page
+                            window.location.href = '/';
+                        }else{
+                            iziToast.show({
+                                title: 'Oppps!',
+                                position: 'topRight',
+                                timeout: 2000,
+                                color: 'red',
+                                message: 'Invalid credentials.',
+                                messageColor: 'black'
+                            });
+                        }
+                        
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            },
+        },
+        
+    });
+</script>
+<!-- vue js scripts end -->
+{% endblock %}

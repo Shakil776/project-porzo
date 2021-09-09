@@ -1,0 +1,174 @@
+{% extends 'frontEnd/html/front_layouts.html' %}
+{% load static %}
+
+{% block title %}Porzotok || About Us{% endblock  %}
+
+{% block custom_css %}
+<style>
+.u-slick__arrow-classic {
+    color: #fff !important;
+    background-color: #C20035 !important;
+}
+.u-slick__arrow-classic:hover {
+    color: #fff !important;
+    background-color: #000 !important;
+}
+
+.u-slick__pagination li.slick-active span {
+    background-color: transparent;
+    border-color: #C20035 !important;
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+}
+
+.u-slick__pagination li span {
+    display: inline-block;
+    width: 10px !important;
+    height: 10px !important;
+    box-sizing: border-box;
+    background-color: #cad4e1;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    -webkit-transform: scale(0.6);
+    transform: scale(0.6);
+    /* transition: 0.3s ease-in-out; */
+}
+</style>
+
+{% endblock %}
+
+{% block main_content %} 
+<main id="content">
+    <!-- Hero Section -->
+    <div class="bg-img-hero text-center mb-1" style="background-image: url({% static 'frontEnd/assets/img/about_us/about_us.jpg' %}); background-position: center;">
+        <div class="container space-top-xl-3 py-6 py-xl-0">
+            <div class="row justify-content-center py-xl-4">
+                <!-- Info -->
+                <div class="py-xl-10 py-5">
+                    <h1 class="font-size-40 font-size-xs-30 text-white font-weight-bold mb-0">About Us</h1>
+                    <nav aria-label="breadcrumb">
+                      <ol class="breadcrumb breadcrumb-no-gutter justify-content-center mb-0">
+                        <li class="breadcrumb-item font-size-14"> <a class="text-white" href="{% url 'webapp:home' %}">Home</a> </li>
+                        <li class="breadcrumb-item custom-breadcrumb-item font-size-14 text-white active" aria-current="page">About</li>
+                      </ol>
+                    </nav>
+                </div>
+                <!-- End Info -->
+            </div>
+        </div>
+    </div>
+    <!-- End Hero Section -->
+    <!-- Slider -->
+    <div class="slider border-bottom border-color-3">
+        <div class="container space-1">
+            <div class="w-md-80 w-lg-70 text-center mx-md-auto mb-5 mt-3">
+                <h2 class="section-title text-black font-size-xs-28 font-weight-bold mb-0">We’re truely dedicated to make your travel experience as much simple and fun as possible!</h2>
+             </div>
+             <section class="w-lg-80 mx-auto mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h2 class="font-size-21 font-weight-bold text-center text-md-left ">Our Story</h2>
+                        <p class="text-gray-1">Bringing you a modern, comfortable, and connected travel experience is one of our highest priorities and that’s why we continuously try to improve your experience when you book anything with us.</p>
+                    </div><!-- /.col -->
+
+                    <div class="col-md-6">
+                        <h2 class="font-size-21 font-weight-bold text-center text-md-left ">Our mission</h2>
+                        <p class="text-gray-1">We really appreciate and welcome any of suggstions you might have for us, so feel free drop us line anytime.Air conditioning, heating, desk, alarm clock, iPod docking station can be found in selected guestrooms.</p>
+                    </div><!-- /.col -->
+
+                </div><!-- ./row -->
+            </section>
+            <div class="js-slick-carousel u-slick pb-2"
+                 data-arrows-classes="d-none d-lg-inline-block u-slick__arrow-classic u-slick__arrow-centered--y rounded-circle"
+                 data-arrow-left-classes="flaticon-back u-slick__arrow-classic-inner u-slick__arrow-classic-inner--left ml-lg-2 ml-xl-9"
+                 data-arrow-right-classes="flaticon-next u-slick__arrow-classic-inner u-slick__arrow-classic-inner--right mr-lg-2 mr-xl-9"
+                 data-pagi-classes="text-center u-slick__pagination mt-5">
+                <div class="js-slide bg-img-hero-center rounded-xs" style="background-image: url({% static 'frontEnd/assets/img/about_us/1.jpeg' %}">
+                    <div class="space-5">
+                    </div>
+                </div>
+                <div class="js-slide bg-img-hero-center rounded-xs" style="background-image: url({% static 'frontEnd/assets/img/about_us/2.jpg' %});">
+                    <div class="space-5">
+                    </div>
+                </div>
+                <div class="js-slide bg-img-hero-center rounded-xs" style="background-image: url({% static 'frontEnd/assets/img/about_us/3.jpg' %});">
+                    <div class="space-5">
+                    </div>
+                </div>
+                <div class="js-slide bg-img-hero-center rounded-xs" style="background-image: url({% static 'frontEnd/assets/img/about_us/4.jpg' %});">
+                    <div class="space-5">
+                    </div>
+                </div>
+                <div class="js-slide bg-img-hero-center rounded-xs" style="background-image: url({% static 'frontEnd/assets/img/about_us/5.jpg' %});">
+                    <div class="space-5">
+                    </div>
+                </div>
+            </div>
+         </div>
+     </div>
+    <!-- End Slider -->
+
+    <!--Banner-->
+    <!-- <div class="gradient-overlay-half-bg-grayish-blue bg-img-hero space-3 space-top-lg-4 space-bottom-lg-3" style="background-image: url({% static 'frontEnd/assets/img/about_us/6.jpg' %});">
+        <div class="text-center mt-xl-2">
+            <h5 class="text-white font-size-41 font-weight-bold mb-2">Travelling Highlights</h5>
+            <h6 class="text-white font-size-21 font-weight-bold mb-3 mb-lg-5 opacity-7">Your New Travelling Idea</h6>
+            
+            <a class="js-fancybox d-inline-block u-media-player" href="javascript:;"
+            data-src="" data-speed="700" data-animate-in="zoomIn" data-animate-out="zoomOut" >
+                <span class="u-media-player__icon u-media-player__icon--lg bg-transparent text-white">
+                    <span class="flaticon-multimedia font-size-60 u-media-player__icon-inner"></span>
+                </span>
+            </a>
+            
+        </div>
+    </div> -->
+    
+
+    <!-- Features Section -->
+    <!-- <div class="gradient-overlay-half-bg-blue bg-img-hero" style="background-image: url({% static 'frontEnd/assets/img/about_us/7.png' %}">
+        <div class="container text-center space-1">
+            
+            <div class="row">
+                
+                <div class="col-md-3">
+                    <i class="flaticon-node text-white font-size-80 mb-3"></i>
+                    <h5 class="font-size-30 text-white font-weight-bold mb-2 js-counter">5340</h5>
+                    <p class="text-white px-xl-2 text-lh-inherit px-uw-3">Total Length of Boats Sold Since 2009</p>
+                </div>
+                
+
+                
+                <div class="col-md-3">
+                    <i class="flaticon-cardinal-points text-white font-size-80 mb-3"></i>
+                    <h5 class="font-size-30 text-white font-weight-bold mb-2 js-counter">19</h5>
+                    <p class="text-white px-xl-2 text-lh-inherit px-uw-3">Locations with Easy Access off the Deep Water Channel</p>
+                </div>
+                
+
+               
+                <div class="col-md-3">
+                    <i class="flaticon-anchor text-white font-size-80 mb-3"></i>
+                    <h5 class="font-size-30 text-white font-weight-bold mb-2 js-counter">18000</h5>
+                    <p class="text-white px-xl-2 text-lh-inherit px-uw-3">sq. ft. Showroom loaded with New & Used Boats</p>
+                </div>
+                
+
+                
+                <div class="col-md-3">
+                    <i class="flaticon-star text-white font-size-80 mb-3"></i>
+                    <h5 class="font-size-30 text-white font-weight-bold mb-2 js-counter">30</h5>
+                    <p class="text-white px-xl-2 text-lh-inherit px-uw-3">Number of Licensed Yachting Professionals</p>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div> -->
+    <!-- End Features Section -->
+</main>
+{% endblock %}
+
+{% block custom_js %}
+
+{% endblock %}
